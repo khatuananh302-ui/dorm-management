@@ -1,0 +1,2260 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>宿舍管理系統 | Quản lý Ký túc xá</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen">
+
+  <!-- Input file ẩn để chọn file CSV -->
+  <input type="file" id="csvFileInput" accept=".csv,text/csv" class="hidden" onchange="handleImportCSV(event)" />
+
+  <!-- ================= MÀN HÌNH ĐĂNG NHẬP ================= -->
+  <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-indigo-900 via-indigo-800 to-slate-900">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8 space-y-6">
+      <div class="flex justify-between items-start">
+        <div>
+          <div class="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center text-xl mb-3">
+            <i class="fa-solid fa-building-shield"></i>
+          </div>
+          <h1 data-i18n="loginTitle" class="text-2xl font-bold text-slate-800">Đăng Nhập Hệ Thống KTX</h1>
+          <p data-i18n="loginSubtitle" class="text-xs text-slate-500 mt-1">Đăng nhập bằng tài khoản, giáo viên hoặc Mã SV (Mật khẩu đầu: 123456)</p>
+        </div>
+        <div class="bg-slate-100 p-1 rounded-lg flex items-center text-xs font-semibold">
+          <button type="button" onclick="setLanguage('vi')" class="lang-btn-vi px-2 py-1 rounded-md bg-indigo-600 text-white transition">VN</button>
+          <button type="button" onclick="setLanguage('zh')" class="lang-btn-zh px-2 py-1 rounded-md text-slate-600 hover:text-slate-900 transition">繁中</button>
+        </div>
+      </div>
+
+      <form onsubmit="handleLogin(event)" class="space-y-4">
+        <div>
+          <label data-i18n="usernameLabel" class="block text-xs font-semibold text-slate-600 mb-1">Tên đăng nhập / Mã SV</label>
+          <div class="relative">
+            <i class="fa-solid fa-user absolute left-3 top-3 text-slate-400 text-sm"></i>
+            <input id="loginUsername" type="text" required data-i18n-placeholder="usernamePlaceholder" placeholder="VD: admin, canbo_1f, gv01, B112001" class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          </div>
+        </div>
+
+        <div>
+          <label data-i18n="passwordLabel" class="block text-xs font-semibold text-slate-600 mb-1">Mật khẩu</label>
+          <div class="relative">
+            <i class="fa-solid fa-lock absolute left-3 top-3 text-slate-400 text-sm"></i>
+            <input id="loginPassword" type="password" required placeholder="123456" class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          </div>
+        </div>
+
+        <p id="loginError" class="hidden text-xs text-rose-600 font-medium bg-rose-50 px-3 py-2 rounded-lg"></p>
+
+        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-lg shadow transition flex items-center justify-center gap-2 text-sm">
+          <i class="fa-solid fa-right-to-bracket"></i>
+          <span data-i18n="loginBtn">Đăng Nhập</span>
+        </button>
+      </form>
+
+      <div class="border-t border-slate-100 pt-4 space-y-2">
+        <p data-i18n="demoAccountsTitle" class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Đăng nhập nhanh tài khoản mẫu (Mật khẩu ban đầu: 123456):</p>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <button type="button" onclick="quickLogin('admin', '123456')" class="p-2 rounded-lg border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 text-left transition">
+            <div class="font-bold text-indigo-700">Admin</div>
+            <div data-i18n="roleAdminDesc" class="text-[11px] text-slate-500">Toàn quyền & xem mật khẩu</div>
+          </button>
+          <button type="button" onclick="quickLogin('canbo_1f', '123456')" class="p-2 rounded-lg border border-slate-200 hover:border-emerald-400 hover:bg-emerald-50 text-left transition">
+            <div class="font-bold text-emerald-700" data-i18n="roleOfficer1FName">Cán bộ 華苑樓 · 1F</div>
+            <div data-i18n="roleOfficerDesc" class="text-[11px] text-slate-500">Chỉ xem & sửa tầng phụ trách</div>
+          </button>
+          <button type="button" onclick="quickLogin('gv01', '123456')" class="p-2 rounded-lg border border-slate-200 hover:border-amber-400 hover:bg-amber-50 text-left transition">
+            <div class="font-bold text-amber-700" data-i18n="roleTeacherName">Giáo viên (gv01)</div>
+            <div data-i18n="roleTeacherDesc" class="text-[11px] text-slate-500">Xem lớp phụ trách</div>
+          </button>
+          <button type="button" onclick="quickLogin('B112001', '123456')" class="p-2 rounded-lg border border-slate-200 hover:border-sky-400 hover:bg-sky-50 text-left transition">
+            <div class="font-bold text-sky-700" data-i18n="roleStudentName">Sinh viên (B112001)</div>
+            <div data-i18n="roleStudentDesc" class="text-[11px] text-slate-500">Đăng nhập bằng Mã SV</div>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= GIAO DIỆN CHÍNH SAU KHI ĐĂNG NHẬP ================= -->
+  <div id="appContainer" class="hidden">
+    <!-- Header -->
+    <header class="bg-indigo-700 text-white shadow-md sticky top-0 z-20">
+      <div class="max-w-6xl mx-auto px-4 py-3.5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <h1 class="text-xl font-bold flex items-center gap-2">
+              <i class="fa-solid fa-building-user"></i>
+              <span data-i18n="appTitle">Quản Lý Ký Túc Xá</span>
+            </h1>
+            <span id="userRoleBadge" class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-white/20 text-white border border-white/30"></span>
+          </div>
+          <p id="welcomeUserText" class="text-indigo-200 text-xs mt-0.5"></p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <div class="bg-indigo-900/60 p-1 rounded-lg flex items-center text-xs font-semibold border border-indigo-400/30">
+            <button type="button" onclick="setLanguage('vi')" class="lang-btn-vi px-2.5 py-1 rounded-md bg-white text-indigo-800 transition">
+              🇻🇳 Tiếng Việt
+            </button>
+            <button type="button" onclick="setLanguage('zh')" class="lang-btn-zh px-2.5 py-1 rounded-md text-indigo-100 hover:text-white transition">
+              🇹🇼 繁體中文
+            </button>
+          </div>
+
+          <button id="btnManageAccounts" onclick="openAccountsModal()" class="hidden bg-amber-400 hover:bg-amber-500 text-slate-900 text-sm font-semibold px-3 py-2 rounded-lg shadow transition flex items-center gap-1.5">
+            <i class="fa-solid fa-users-gear"></i>
+            <span data-i18n="manageAccountsBtn">Tài khoản & Phân tầng</span>
+          </button>
+
+          <button onclick="openChangePasswordModal()" class="bg-indigo-500 hover:bg-indigo-400 text-white text-sm font-medium px-3 py-2 rounded-lg shadow transition flex items-center gap-1.5">
+            <i class="fa-solid fa-key"></i>
+            <span data-i18n="changePassBtn">Đổi mật khẩu</span>
+          </button>
+
+          <button id="btnImportCSV" onclick="triggerImportCSV()" class="bg-sky-500 hover:bg-sky-600 text-white text-sm font-medium px-3 py-2 rounded-lg shadow transition flex items-center gap-1.5">
+            <i class="fa-solid fa-file-import"></i>
+            <span data-i18n="importBtn">Nhập CSV</span>
+          </button>
+
+          <button id="btnDownloadTemplate" onclick="downloadTemplateCSV()" class="bg-indigo-500 hover:bg-indigo-400 text-white text-sm font-medium px-3 py-2 rounded-lg shadow transition flex items-center gap-1.5" data-i18n-title="templateTitle" title="Tải file CSV mẫu">
+            <i class="fa-solid fa-file-arrow-down"></i>
+            <span data-i18n="templateBtn">File Mẫu</span>
+          </button>
+
+          <button id="btnExportCSV" onclick="exportCSV()" class="bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium px-3 py-2 rounded-lg shadow transition flex items-center gap-1.5">
+            <i class="fa-solid fa-file-excel"></i>
+            <span data-i18n="exportBtn">Xuất CSV</span>
+          </button>
+
+          <button id="btnAddStudent" onclick="openModal()" class="bg-white text-indigo-700 hover:bg-indigo-50 text-sm font-semibold px-4 py-2 rounded-lg shadow transition flex items-center gap-1.5">
+            <i class="fa-solid fa-plus"></i>
+            <span data-i18n="addBtn">Thêm Sinh Viên</span>
+          </button>
+
+          <button onclick="logout()" class="bg-rose-500 hover:bg-rose-600 text-white text-sm font-medium px-3 py-2 rounded-lg shadow transition flex items-center gap-1.5" data-i18n-title="logoutBtn" title="Đăng xuất">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span data-i18n="logoutBtn">Đăng xuất</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 py-6 space-y-6">
+      <div id="roleNoticeBanner" class="bg-indigo-50 border border-indigo-200 text-indigo-900 px-4 py-3 rounded-xl text-xs sm:text-sm flex items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-circle-info text-indigo-600"></i>
+          <span id="roleNoticeText"></span>
+        </div>
+      </div>
+
+      <!-- Thống kê nhanh điểm danh -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+          <p data-i18n="statTotal" class="text-xs text-slate-500 font-medium">Tổng số sinh viên</p>
+          <p id="statTotal" class="text-2xl font-bold text-slate-800 mt-1">0</p>
+        </div>
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+          <p data-i18n="statAttPresent" class="text-xs text-emerald-600 font-medium">Có mặt ngày chọn</p>
+          <p id="statAttPresent" class="text-2xl font-bold text-emerald-600 mt-1">0</p>
+        </div>
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+          <p data-i18n="statAttAbsent" class="text-xs text-rose-600 font-medium">Vắng mặt ngày chọn</p>
+          <p id="statAttAbsent" class="text-2xl font-bold text-rose-600 mt-1">0</p>
+        </div>
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+          <p data-i18n="statAttLate" class="text-xs text-orange-600 font-medium">Về muộn ngày chọn</p>
+          <p id="statAttLate" class="text-2xl font-bold text-orange-600 mt-1">0</p>
+        </div>
+      </div>
+
+      <!-- Thanh điều khiển Điểm danh hàng ngày & Khung giờ 22:30 - 00:00 -->
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 pb-3 border-b border-slate-100">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-xs font-bold uppercase tracking-wide text-indigo-700 bg-indigo-50 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5">
+              <i class="fa-solid fa-calendar-check"></i>
+              <span data-i18n="attDateLabel">Ngày điểm danh:</span>
+            </span>
+            <input type="date" id="attendanceDate" onchange="renderTable()" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            <button type="button" onclick="setToday()" class="text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg transition" data-i18n="todayBtn">
+              Hôm nay
+            </button>
+            <span id="attendanceRateBadge" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-700">0%</span>
+            <span id="attendanceWindowBadge" class="text-xs font-semibold px-2.5 py-1 rounded-full"></span>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <button id="btnAdminOverrideWindow" type="button" onclick="toggleAdminOverrideWindow()" class="hidden text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+              <i class="fa-solid fa-clock-rotate-left"></i>
+              <span id="overrideWindowBtnText">Mở tạm ngoài giờ</span>
+            </button>
+            <button id="btnMarkAllPresent" type="button" onclick="markAllFiltered('PRESENT')" class="text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+              <i class="fa-solid fa-check-double"></i>
+              <span data-i18n="markAllPresent">Có mặt tất cả (đang lọc)</span>
+            </button>
+            <button id="btnExportAttendance" type="button" onclick="exportAttendanceCSV()" class="text-xs font-semibold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+              <i class="fa-solid fa-file-csv"></i>
+              <span data-i18n="exportAttBtn">Xuất điểm danh ngày</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="filterBar" class="grid grid-cols-1 md:grid-cols-5 gap-3">
+          <div class="relative md:col-span-2">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-sm"></i>
+            <input id="searchInput" oninput="renderTable()" type="text" data-i18n-placeholder="searchPlaceholder" placeholder="Tìm theo tên, mã SV, số phòng, lớp..." class="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          </div>
+          <select id="filterBuilding" onchange="onBuildingSelectChange(this.value)" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="ALL" data-i18n="allBuildings">Tất cả tòa nhà</option>
+            <option value="華苑樓">華苑樓</option>
+            <option value="志清樓">志清樓</option>
+            <option value="橫渠樓">橫渠樓</option>
+          </select>
+          <select id="filterFloor" onchange="onFloorSelectChange(this.value)" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="ALL" data-i18n="allFloors">Tất cả tầng</option>
+          </select>
+          <select id="filterAttendance" onchange="renderTable()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="ALL" data-i18n="allAttendance">Tất cả điểm danh</option>
+            <option value="PRESENT" data-i18n="attPresent">Có mặt</option>
+            <option value="ABSENT" data-i18n="attAbsent">Vắng mặt</option>
+            <option value="LATE" data-i18n="attLate">Về muộn</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- ================= BẢNG ĐIỂM DANH HÀNG NGÀY (CHỌN TÒA -> CHỌN TẦNG -> HIỆN DANH SÁCH) ================= -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <!-- Bước 1: Chọn Tòa -->
+        <div id="buildingTabsBar" class="px-4 py-3 bg-slate-50/80 border-b border-slate-200 flex flex-wrap items-center gap-2">
+          <span class="text-xs font-semibold text-slate-500 mr-1 flex items-center gap-1.5">
+            <i class="fa-solid fa-building text-indigo-600"></i>
+            <span data-i18n="quickBuildingLabel">1. Chọn tòa nhà:</span>
+          </span>
+          <div id="buildingTabsList" class="flex flex-wrap items-center gap-2"></div>
+        </div>
+
+        <!-- Bước 2: Chọn Tầng (sau khi đã chọn tòa) -->
+        <div id="floorStepBar" class="hidden px-4 py-3 bg-indigo-50/50 border-b border-slate-200 flex flex-wrap items-center gap-2">
+          <span class="text-xs font-semibold text-indigo-800 mr-1 flex items-center gap-1.5">
+            <i class="fa-solid fa-layer-group text-indigo-600"></i>
+            <span data-i18n="quickFloorLabel">2. Chọn tầng:</span>
+          </span>
+          <div id="floorTabsList" class="flex flex-wrap items-center gap-2"></div>
+        </div>
+
+        <!-- Hướng dẫn chọn Tòa / Tầng trước khi hiện danh sách -->
+        <div id="selectGuideState" class="hidden py-12 px-4 text-center text-slate-500 space-y-1.5">
+          <i class="fa-solid fa-arrow-up-from-bracket text-2xl text-indigo-400"></i>
+          <p id="selectGuideText" class="text-sm font-medium">Vui lòng chọn tòa nhà và chọn tầng để hiển thị danh sách điểm danh.</p>
+        </div>
+
+        <!-- Danh sách sinh viên -->
+        <div id="rosterTableWrapper" class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase text-slate-500 font-semibold">
+                <th data-i18n="colRoom" class="py-3 px-4">Tòa / Tầng / Phòng</th>
+                <th data-i18n="colStudent" class="py-3 px-4">Họ Tên & Lớp</th>
+                <th data-i18n="colAttendance" class="py-3 px-4">Điểm Danh Ngày</th>
+                <th data-i18n="colNote" class="py-3 px-4">Ghi Chú Điểm Danh</th>
+                <th id="colActionHeader" data-i18n="colAction" class="py-3 px-4 text-right">Thao Tác</th>
+              </tr>
+            </thead>
+            <tbody id="dormTableBody" class="divide-y divide-slate-100 text-sm"></tbody>
+          </table>
+        </div>
+        <div id="emptyState" class="hidden py-12 text-center text-slate-400">
+          <i class="fa-regular fa-folder-open text-3xl mb-2"></i>
+          <p data-i18n="emptyText" class="text-sm">Chưa có dữ liệu phù hợp.</p>
+        </div>
+      </div>
+
+      <!-- ================= MỤC RIÊNG CHO ADMIN: QUẢN LÝ CÁN BỘ & TRẠNG THÁI ĐIỂM DANH ================= -->
+      <section id="officerManagementSection" class="hidden bg-white rounded-xl shadow-sm border border-indigo-200 overflow-hidden">
+        <div class="px-4 py-3.5 bg-indigo-50/80 border-b border-indigo-200 flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <span class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-sm">
+              <i class="fa-solid fa-user-shield"></i>
+            </span>
+            <div>
+              <h2 data-i18n="officerSectionTitle" class="text-base font-bold text-indigo-950">Mục Quản Lý Cán Bộ & Trạng Thái Điểm Danh (幹部管理)</h2>
+              <p data-i18n="officerSectionSubtitle" class="text-xs text-indigo-800/80">Theo dõi trực tiếp tầng phụ trách và kết quả điểm danh của từng cán bộ trong ngày đang chọn</p>
+            </div>
+          </div>
+          <span id="officerCountBadge" class="text-xs font-bold px-2.5 py-1 rounded-full bg-indigo-200/80 text-indigo-950">0</span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase text-slate-500 font-semibold">
+                <th data-i18n="colOfficerName" class="py-3 px-4">Cán Bộ / Tài Khoản</th>
+                <th data-i18n="colOfficerScope" class="py-3 px-4">Tòa & Tầng Phụ Trách</th>
+                <th data-i18n="colOfficerLiveAtt" class="py-3 px-4">Trạng Thái Điểm Danh Trực Tiếp</th>
+                <th data-i18n="colAction" class="py-3 px-4 text-right">Thao Tác</th>
+              </tr>
+            </thead>
+            <tbody id="officerLiveTableBody" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= MỤC RIÊNG: QUẢN LÝ NGHỈ PHÉP NGOÀI ================= -->
+      <section class="bg-white rounded-xl shadow-sm border border-amber-200 overflow-hidden">
+        <div class="px-4 py-3.5 bg-amber-50/80 border-b border-amber-200 flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <span class="w-8 h-8 rounded-lg bg-amber-500 text-white flex items-center justify-center text-sm">
+              <i class="fa-solid fa-person-walking-arrow-right"></i>
+            </span>
+            <div>
+              <h2 data-i18n="leaveSectionTitle" class="text-base font-bold text-amber-950">Mục Nghỉ Phép Ngoài (請假管理)</h2>
+              <p data-i18n="leaveSectionSubtitle" class="text-xs text-amber-800/80">Quản lý riêng đơn nghỉ phép / ra ngoài, tách biệt khỏi bảng điểm danh</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="leaveCountBadge" class="text-xs font-bold px-2.5 py-1 rounded-full bg-amber-200/80 text-amber-950">0</span>
+            <button type="button" onclick="openDedicatedRequestModal('LEAVE')" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow transition flex items-center gap-1.5">
+              <i class="fa-solid fa-plus"></i>
+              <span data-i18n="addLeaveBtn">Tạo đơn nghỉ phép</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase text-slate-500 font-semibold">
+                <th data-i18n="colRoom" class="py-3 px-4">Tòa / Tầng / Phòng</th>
+                <th data-i18n="colStudent" class="py-3 px-4">Họ Tên & Lớp</th>
+                <th data-i18n="colLeavePeriod" class="py-3 px-4">Thời Gian Nghỉ Phép</th>
+                <th data-i18n="colReason" class="py-3 px-4">Lý Do Nghỉ Phép</th>
+                <th data-i18n="colAction" class="py-3 px-4 text-right">Thao Tác</th>
+              </tr>
+            </thead>
+            <tbody id="leaveTableBody" class="divide-y divide-slate-100 text-sm"></tbody>
+          </table>
+        </div>
+        <div id="leaveEmptyState" class="hidden py-8 text-center text-slate-400 text-xs" data-i18n="leaveEmptyText">
+          Hiện chưa có đơn nghỉ phép ngoài nào.
+        </div>
+      </section>
+
+      <!-- ================= MỤC RIÊNG: QUẢN LÝ BÁO SỬA CHỮA ================= -->
+      <section class="bg-white rounded-xl shadow-sm border border-purple-200 overflow-hidden">
+        <div class="px-4 py-3.5 bg-purple-50/80 border-b border-purple-200 flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <span class="w-8 h-8 rounded-lg bg-purple-600 text-white flex items-center justify-center text-sm">
+              <i class="fa-solid fa-screwdriver-wrench"></i>
+            </span>
+            <div>
+              <h2 data-i18n="repairSectionTitle" class="text-base font-bold text-purple-950">Mục Báo Sửa Chữa (報修管理)</h2>
+              <p data-i18n="repairSectionSubtitle" class="text-xs text-purple-800/80">Quản lý riêng hạng mục sửa chữa phòng / thiết bị, tách biệt khỏi bảng điểm danh</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="repairCountBadge" class="text-xs font-bold px-2.5 py-1 rounded-full bg-purple-200/80 text-purple-950">0</span>
+            <button type="button" onclick="openDedicatedRequestModal('REPAIR')" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow transition flex items-center gap-1.5">
+              <i class="fa-solid fa-plus"></i>
+              <span data-i18n="addRepairBtn">Tạo phiếu báo sửa</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase text-slate-500 font-semibold">
+                <th data-i18n="colRoom" class="py-3 px-4">Tòa / Tầng / Phòng</th>
+                <th data-i18n="colStudent" class="py-3 px-4">Họ Tên & Lớp</th>
+                <th data-i18n="colRepairItem" class="py-3 px-4">Hạng Mục Sửa Chữa</th>
+                <th data-i18n="colRepairStatus" class="py-3 px-4">Tiến Độ</th>
+                <th data-i18n="colAction" class="py-3 px-4 text-right">Thao Tác</th>
+              </tr>
+            </thead>
+            <tbody id="repairTableBody" class="divide-y divide-slate-100 text-sm"></tbody>
+          </table>
+        </div>
+        <div id="repairEmptyState" class="hidden py-8 text-center text-slate-400 text-xs" data-i18n="repairEmptyText">
+          Hiện chưa có yêu cầu sửa chữa nào.
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal Thêm / Sửa Sinh Viên (Admin) -->
+  <div id="formModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
+      <div class="flex justify-between items-center border-b pb-3">
+        <h2 id="modalTitle" class="text-lg font-bold text-slate-800">Thêm Sinh Viên Nội Trú</h2>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      <form id="studentForm" onsubmit="saveStudent(event)" class="space-y-3">
+        <input type="hidden" id="editId" />
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label data-i18n="lblBuilding" class="block text-xs font-semibold text-slate-600 mb-1">Tòa nhà</label>
+            <select id="building" required class="w-full border border-slate-300 rounded-lg px-2.5 py-2 text-sm">
+              <option value="華苑樓">華苑樓</option>
+              <option value="志清樓">志清樓</option>
+              <option value="橫渠樓">橫渠樓</option>
+            </select>
+          </div>
+          <div>
+            <label data-i18n="lblFloor" class="block text-xs font-semibold text-slate-600 mb-1">Tầng</label>
+            <select id="floor" required class="w-full border border-slate-300 rounded-lg px-2.5 py-2 text-sm"></select>
+          </div>
+          <div>
+            <label data-i18n="lblRoom" class="block text-xs font-semibold text-slate-600 mb-1">Số phòng</label>
+            <input id="room" type="text" required data-i18n-placeholder="roomPlaceholder" placeholder="VD: 101-1" class="w-full border border-slate-300 rounded-lg px-2.5 py-2 text-sm" />
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label data-i18n="lblName" class="block text-xs font-semibold text-slate-600 mb-1">Họ và Tên</label>
+            <input id="name" type="text" required data-i18n-placeholder="namePlaceholder" placeholder="VD: 趙德原" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label data-i18n="lblStudentId" class="block text-xs font-semibold text-slate-600 mb-1">Mã SV (Tài khoản)</label>
+            <input id="studentId" type="text" required data-i18n-placeholder="idPlaceholder" placeholder="VD: B1120101" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+          </div>
+        </div>
+        <div>
+          <label data-i18n="lblClass" class="block text-xs font-semibold text-slate-600 mb-1">Lớp học</label>
+          <input id="className" type="text" required placeholder="VD: Lớp A" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label data-i18n="lblNote" class="block text-xs font-semibold text-slate-600 mb-1">Ghi chú điểm danh</label>
+          <textarea id="note" rows="2" data-i18n-placeholder="notePlaceholder" placeholder="VD: Ghi chú điểm danh / về muộn..." class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"></textarea>
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeModal()" data-i18n="cancelBtn" class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg">Hủy</button>
+          <button type="submit" data-i18n="saveBtn" class="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow">Lưu Thông Tin</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Tạo Đơn Nghỉ Phép Ngoài / Phiếu Báo Sửa Chữa -->
+  <div id="dedicatedRequestModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
+      <div class="flex justify-between items-center border-b pb-3">
+        <h2 id="dedicatedModalTitle" class="text-lg font-bold text-slate-800">Tạo Đơn</h2>
+        <button onclick="closeDedicatedRequestModal()" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      <form onsubmit="submitDedicatedRequest(event)" class="space-y-3">
+        <input type="hidden" id="reqType" />
+        <div>
+          <label data-i18n="lblSelectStudent" class="block text-xs font-semibold text-slate-600 mb-1">Sinh viên</label>
+          <select id="reqResidentId" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"></select>
+        </div>
+        <div>
+          <label id="reqTimeOrItemLabel" class="block text-xs font-semibold text-slate-600 mb-1">Thời gian / Hạng mục</label>
+          <input id="reqMeta" type="text" required placeholder="VD: 20/11 - 22/11 hoặc Đèn bàn học" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label id="reqDetailLabel" class="block text-xs font-semibold text-slate-600 mb-1">Lý do / Ghi chú</label>
+          <textarea id="reqDetail" rows="3" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"></textarea>
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeDedicatedRequestModal()" data-i18n="cancelBtn" class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg">Hủy</button>
+          <button type="submit" data-i18n="sendReportBtn" class="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow">Gửi Yêu Cầu</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Đổi Mật Khẩu -->
+  <div id="changePasswordModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
+      <div class="flex justify-between items-center border-b pb-3">
+        <h2 data-i18n="changePassTitle" class="text-lg font-bold text-slate-800">Đổi Mật Khẩu</h2>
+        <button onclick="closeChangePasswordModal()" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      <form onsubmit="submitChangePassword(event)" class="space-y-3">
+        <div>
+          <label data-i18n="oldPassLabel" class="block text-xs font-semibold text-slate-600 mb-1">Mật khẩu hiện tại</label>
+          <input id="oldPasswordInput" type="password" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label data-i18n="newPassLabel" class="block text-xs font-semibold text-slate-600 mb-1">Mật khẩu mới</label>
+          <input id="newPasswordInput" type="password" required minlength="3" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+        </div>
+        <p id="changePassMsg" class="hidden text-xs font-medium px-3 py-2 rounded-lg"></p>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeChangePasswordModal()" data-i18n="cancelBtn" class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg">Hủy</button>
+          <button type="submit" data-i18n="savePassBtn" class="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow">Cập nhật mật khẩu</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Quản Lý Tài Khoản, Phân Tầng, Xóa TK & Xem Mật Khẩu (Admin) -->
+  <div id="accountsModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl max-w-4xl w-full p-6 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b pb-3">
+        <div>
+          <h2 data-i18n="accountsModalTitle" class="text-lg font-bold text-slate-800">Quản Lý Tài Khoản, Phân Tầng & Mật Khẩu</h2>
+          <p data-i18n="accountsModalDesc" class="text-xs text-slate-500">Phân tầng cán bộ (1F - 9F+), phân lớp giáo viên, xóa tài khoản và xem mật khẩu hiện tại</p>
+        </div>
+        <button onclick="closeAccountsModal()" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <form onsubmit="addStaffAccount(event)" class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 grid grid-cols-1 sm:grid-cols-6 gap-2.5 items-end">
+        <div>
+          <label data-i18n="accRoleLabel" class="block text-[11px] font-semibold text-slate-600 mb-1">Vai trò</label>
+          <select id="newAccRole" onchange="toggleStaffAssignFields()" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-xs bg-white">
+            <option value="OFFICER" data-i18n="optOfficer">Cán bộ tầng</option>
+            <option value="TEACHER" data-i18n="optTeacher">Giáo viên</option>
+          </select>
+        </div>
+        <div>
+          <label data-i18n="accUserLabel" class="block text-[11px] font-semibold text-slate-600 mb-1">Tên đăng nhập</label>
+          <input id="newAccUsername" type="text" required placeholder="VD: canbo_8f / gv02" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs bg-white" />
+        </div>
+        <div>
+          <label data-i18n="accNameLabel" class="block text-[11px] font-semibold text-slate-600 mb-1">Tên hiển thị</label>
+          <input id="newAccDisplayName" type="text" required placeholder="VD: Cán bộ 8F / Cô Mai" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs bg-white" />
+        </div>
+        <div id="officerAssignWrap" class="sm:col-span-2 grid grid-cols-2 gap-2">
+          <div>
+            <label data-i18n="lblBuilding" class="block text-[11px] font-semibold text-slate-600 mb-1">Tòa</label>
+            <select id="newAccBuilding" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-xs bg-white">
+              <option value="華苑樓">華苑樓</option>
+              <option value="志清樓">志清樓</option>
+              <option value="橫渠樓">橫渠樓</option>
+            </select>
+          </div>
+          <div>
+            <label data-i18n="lblFloor" class="block text-[11px] font-semibold text-slate-600 mb-1">Tầng</label>
+            <select id="newAccFloor" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-xs bg-white"></select>
+          </div>
+        </div>
+        <div id="teacherAssignWrap" class="hidden sm:col-span-2">
+          <label data-i18n="lblClass" class="block text-[11px] font-semibold text-slate-600 mb-1">Lớp phụ trách</label>
+          <input id="newAccClass" type="text" placeholder="VD: Lớp B" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs bg-white" />
+        </div>
+        <div>
+          <button type="submit" data-i18n="addAccBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold py-2 rounded-lg shadow transition">
+            Thêm TK
+          </button>
+        </div>
+      </form>
+
+      <div class="overflow-x-auto border border-slate-200 rounded-xl">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-slate-50 border-b border-slate-200 uppercase text-slate-500 font-semibold">
+              <th data-i18n="colAccUser" class="py-2.5 px-3">Tài khoản</th>
+              <th data-i18n="colAccName" class="py-2.5 px-3">Họ tên</th>
+              <th data-i18n="colAccRole" class="py-2.5 px-3">Vai trò</th>
+              <th data-i18n="colAccScope" class="py-2.5 px-3">Phân Tòa / Tầng / Lớp</th>
+              <th data-i18n="colAccPass" class="py-2.5 px-3">Mật khẩu hiện tại</th>
+              <th data-i18n="colAction" class="py-2.5 px-3 text-right">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody id="accountsTableBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const translations = {
+      vi: {
+        loginTitle: "Đăng Nhập Hệ Thống KTX",
+        loginSubtitle: "Đăng nhập bằng tài khoản, giáo viên hoặc Mã SV (Mật khẩu đầu: 123456)",
+        usernameLabel: "Tên đăng nhập / Mã SV",
+        usernamePlaceholder: "VD: admin, canbo_1f, gv01, B112001",
+        passwordLabel: "Mật khẩu",
+        loginBtn: "Đăng Nhập",
+        loginInvalid: "Sai tên đăng nhập hoặc mật khẩu!",
+        demoAccountsTitle: "Đăng nhập nhanh tài khoản mẫu (Mật khẩu ban đầu: 123456):",
+        roleAdminDesc: "Toàn quyền & xem mật khẩu",
+        roleOfficer1FName: "Cán bộ 華苑樓 · 1F",
+        roleOfficerDesc: "Chỉ xem & sửa tầng phụ trách",
+        roleTeacherName: "Giáo viên (gv01)",
+        roleTeacherDesc: "Xem lớp phụ trách",
+        roleStudentName: "Sinh viên (B112001)",
+        roleStudentDesc: "Đăng nhập bằng Mã SV",
+        roleLabel_ADMIN: "Quản trị viên (Admin)",
+        roleLabel_OFFICER: "Cán bộ tầng ({building} · {floor})",
+        roleLabel_TEACHER: "Giáo viên ({class})",
+        roleLabel_STUDENT: "Sinh viên nội trú",
+        notice_ADMIN: "Quyền Admin: Chọn Tòa → Chọn Tầng để mở danh sách điểm danh. Khung giờ điểm danh 22:30–00:00 (hỗ trợ tầng 1F–9F+).",
+        notice_OFFICER: "Quyền Cán bộ tầng ({building} · {floor}): Chỉ xem và điểm danh sinh viên {building} - tầng {floor} trong khung 22:30–00:00.",
+        notice_TEACHER: "Quyền Giáo viên ({class}): Chỉ hiển thị sinh viên thuộc {class} (chế độ chỉ xem).",
+        notice_STUDENT: "Quyền Sinh viên: Đăng nhập bằng Mã SV (mật khẩu đầu 123456). Có thể đổi mật khẩu và gửi đơn Nghỉ phép ngoài hoặc Báo sửa chữa.",
+        welcomePrefix: "Xin chào,",
+        logoutBtn: "Đăng xuất",
+        appTitle: "Quản Lý Ký Túc Xá",
+        manageAccountsBtn: "Tài khoản & Phân tầng",
+        changePassBtn: "Đổi mật khẩu",
+        importBtn: "Nhập CSV",
+        templateBtn: "File Mẫu",
+        templateTitle: "Tải file CSV mẫu để điền danh sách",
+        exportBtn: "Xuất CSV",
+        addBtn: "Thêm Sinh Viên",
+        statTotal: "Tổng số sinh viên",
+        statAttPresent: "Có mặt ngày chọn",
+        statAttAbsent: "Vắng mặt ngày chọn",
+        statAttLate: "Về muộn ngày chọn",
+        attDateLabel: "Ngày điểm danh:",
+        todayBtn: "Hôm nay",
+        attWindowOpen: "Đang mở điểm danh (22:30 - 00:00)",
+        attWindowClosed: "Đã khóa điểm danh (Chỉ mở 22:30 - 00:00)",
+        attWindowOverride: "Đang mở tạm thời bởi Admin",
+        overrideOpenBtn: "Mở tạm ngoài giờ",
+        overrideCloseBtn: "Khóa theo giờ chuẩn",
+        markAllPresent: "Có mặt tất cả (đang lọc)",
+        exportAttBtn: "Xuất điểm danh ngày",
+        searchPlaceholder: "Tìm theo tên, mã SV, số phòng, lớp...",
+        allBuildings: "Tất cả tòa nhà",
+        allFloors: "Tất cả tầng",
+        allFloorsInBuilding: "Tất cả tầng của tòa",
+        quickBuildingLabel: "1. Chọn tòa nhà:",
+        quickFloorLabel: "2. Chọn tầng:",
+        selectGuideMsg: "Hãy chọn một Tòa nhà ở bước 1, sau đó chọn Tầng ở bước 2 để hiển thị danh sách điểm danh.",
+        selectFloorGuideMsg: "Đã chọn {building}. Hãy chọn Tầng để hiển thị danh sách điểm danh.",
+        allAttendance: "Tất cả điểm danh",
+        attPresent: "Có mặt",
+        attAbsent: "Vắng mặt",
+        attLate: "Về muộn",
+        colRoom: "Tòa / Tầng / Phòng",
+        colStudent: "Họ Tên & Lớp",
+        colAttendance: "Điểm Danh Ngày",
+        colNote: "Ghi Chú Điểm Danh",
+        colAction: "Thao Tác",
+        emptyText: "Chưa có dữ liệu phù hợp.",
+        officerSectionTitle: "Mục Quản Lý Cán Bộ & Trạng Thái Điểm Danh (幹部管理)",
+        officerSectionSubtitle: "Theo dõi trực tiếp tầng phụ trách và kết quả điểm danh của từng cán bộ",
+        colOfficerName: "Cán Bộ / Tài Khoản",
+        colOfficerScope: "Tòa & Tầng Phụ Trách",
+        colOfficerLiveAtt: "Trạng Thái Điểm Danh Trực Tiếp",
+        viewOfficerFloorBtn: "Mở tầng này",
+        leaveSectionTitle: "Mục Nghỉ Phép Ngoài (請假管理)",
+        leaveSectionSubtitle: "Quản lý riêng đơn nghỉ phép / ra ngoài, tách biệt khỏi bảng điểm danh",
+        addLeaveBtn: "Tạo đơn nghỉ phép",
+        colLeavePeriod: "Thời Gian Nghỉ Phép",
+        colReason: "Lý Do Nghỉ Phép",
+        leaveEmptyText: "Hiện chưa có đơn nghỉ phép ngoài nào trong phạm vi xem.",
+        repairSectionTitle: "Mục Báo Sửa Chữa (報修管理)",
+        repairSectionSubtitle: "Quản lý riêng phiếu sửa chữa thiết bị / phòng ở, tách biệt khỏi bảng điểm danh",
+        addRepairBtn: "Tạo phiếu báo sửa",
+        colRepairItem: "Hạng Mục Sửa Chữa",
+        colRepairStatus: "Tiến Độ",
+        repairEmptyText: "Hiện chưa có phiếu báo sửa chữa nào trong phạm vi xem.",
+        repairPending: "Chờ xử lý",
+        repairDone: "Đã sửa xong",
+        markDoneBtn: "Đánh dấu xong",
+        modalAddTitle: "Thêm Sinh Viên Nội Trú",
+        modalEditTitle: "Cập Nhật Thông Tin",
+        lblBuilding: "Tòa nhà",
+        lblFloor: "Tầng",
+        lblRoom: "Số phòng",
+        lblName: "Họ và Tên",
+        lblStudentId: "Mã SV (Tài khoản)",
+        lblClass: "Lớp học",
+        lblNote: "Ghi chú điểm danh",
+        roomPlaceholder: "VD: 101-1",
+        namePlaceholder: "VD: 趙德原",
+        idPlaceholder: "VD: B1120101",
+        notePlaceholder: "VD: Về muộn 15 phút do xe buýt...",
+        cancelBtn: "Hủy",
+        saveBtn: "Lưu Thông Tin",
+        lblSelectStudent: "Sinh viên",
+        leaveModalTitle: "Tạo Đơn Nghỉ Phép Ngoài",
+        leaveMetaLabel: "Thời gian nghỉ phép (từ ngày - đến ngày)",
+        leaveMetaPlaceholder: "VD: 20/11/2026 - 22/11/2026",
+        leaveDetailLabel: "Lý do nghỉ phép ngoài",
+        leaveDetailPlaceholder: "VD: Về quê / Giải quyết việc gia đình...",
+        repairModalTitle: "Tạo Phiếu Báo Sửa Chữa",
+        repairMetaLabel: "Hạng mục / Thiết bị cần sửa",
+        repairMetaPlaceholder: "VD: Điều hòa phòng 101-1 / Đèn nhà tắm",
+        repairDetailLabel: "Mô tả sự cố chi tiết",
+        repairDetailPlaceholder: "VD: Không làm mát, kêu to khi chạy...",
+        sendReportBtn: "Gửi Yêu Cầu",
+        requestCreatedSuccess: "Đã lưu yêu cầu thành công!",
+        changePassTitle: "Đổi Mật Khẩu",
+        oldPassLabel: "Mật khẩu hiện tại",
+        newPassLabel: "Mật khẩu mới",
+        savePassBtn: "Cập nhật mật khẩu",
+        oldPassWrong: "Mật khẩu hiện tại không đúng!",
+        passChangedSuccess: "Đã đổi mật khẩu thành công!",
+        accountsModalTitle: "Quản Lý Tài Khoản, Phân Tầng & Mật Khẩu",
+        accountsModalDesc: "Phân tầng cán bộ (1F - 9F+), phân lớp giáo viên, xóa tài khoản và xem mật khẩu hiện tại",
+        accRoleLabel: "Vai trò",
+        optOfficer: "Cán bộ tầng",
+        optTeacher: "Giáo viên",
+        accUserLabel: "Tên đăng nhập",
+        accNameLabel: "Tên hiển thị",
+        addAccBtn: "Thêm TK",
+        colAccUser: "Tài khoản",
+        colAccName: "Họ tên",
+        colAccRole: "Vai trò",
+        colAccScope: "Phân Tòa / Tầng / Lớp",
+        colAccPass: "Mật khẩu hiện tại",
+        accExistsError: "Tên đăng nhập này đã tồn tại!",
+        confirmDeleteAcc: "Bạn có chắc muốn xóa tài khoản {username} không?",
+        floorPrefix: "Tầng",
+        roomPrefix: "Phòng",
+        classPrefix: "Lớp",
+        editTitle: "Sửa",
+        deleteTitle: "Xóa",
+        confirmDelete: "Bạn có chắc muốn xóa hồ sơ này không?",
+        csvHeaders: ["Toa nha", "Tang", "So phong", "Ho ten", "Ma SV", "Lop", "Ghi chu"],
+        csvFileName: "Danh_Sach_KTX.csv",
+        attCsvHeaders: ["Ngay diem danh", "Toa nha", "Tang", "So phong", "Ho ten", "Ma SV", "Lop", "Diem danh", "Ghi chu"],
+        attCsvFileName: "Diem_Danh_KTX_{date}.csv",
+        templateFileName: "Mau_Nhap_KTX.csv",
+        importSuccess: "Đã thêm thành công {count} sinh viên từ file.",
+        importEmpty: "Không tìm thấy dòng dữ liệu hợp lệ nào trong file CSV."
+      },
+      zh: {
+        loginTitle: "宿舍管理系統登入",
+        loginSubtitle: "可使用帳號、老師帳號或學號登入（初始密碼皆為 123456）",
+        usernameLabel: "帳號 / 學號",
+        usernamePlaceholder: "例：admin, canbo_1f, gv01, B112001",
+        passwordLabel: "密碼",
+        loginBtn: "登入系統",
+        loginInvalid: "帳號或密碼錯誤，請重新輸入！",
+        demoAccountsTitle: "快速登入測試帳號（初始密碼皆為 123456）：",
+        roleAdminDesc: "最高權限與查看密碼",
+        roleOfficer1FName: "樓層幹部 華苑樓 · 1F",
+        roleOfficerDesc: "僅檢視與修改負責樓層",
+        roleTeacherName: "負責老師 (gv01)",
+        roleTeacherDesc: "檢視負責班級",
+        roleStudentName: "住宿生 (B112001)",
+        roleStudentDesc: "以學號登入",
+        roleLabel_ADMIN: "系統管理員 (Admin)",
+        roleLabel_OFFICER: "樓層幹部 ({building} · {floor})",
+        roleLabel_TEACHER: "負責老師 ({class})",
+        roleLabel_STUDENT: "住宿生",
+        notice_ADMIN: "管理員權限：先選棟別 → 再選樓層後顯示點名名單。點名時段 22:30–00:00（支援 1F–9F+）。",
+        notice_OFFICER: "樓層幹部權限（{building} · {floor}）：僅於 22:30–00:00 可對 {building} {floor} 進行點名。",
+        notice_TEACHER: "負責老師權限（{class}）：僅顯示 {class} 住宿生資料（唯讀）。",
+        notice_STUDENT: "住宿生權限：以學號登入（初始密碼 123456），可修改密碼並於下方獨立區塊提交請假或報修。",
+        welcomePrefix: "您好，",
+        logoutBtn: "登出",
+        appTitle: "宿舍管理系統",
+        manageAccountsBtn: "帳號與樓層權限",
+        changePassBtn: "修改密碼",
+        importBtn: "匯入 CSV",
+        templateBtn: "範例檔",
+        templateTitle: "下載空白/範例 CSV 檔案",
+        exportBtn: "匯出 CSV",
+        addBtn: "新增住宿生",
+        statTotal: "住宿生總數",
+        statAttPresent: "當日出席",
+        statAttAbsent: "當日缺席",
+        statAttLate: "當日晚歸",
+        attDateLabel: "點名日期：",
+        todayBtn: "今天",
+        attWindowOpen: "點名開放中（22:30 - 00:00）",
+        attWindowClosed: "已逾時鎖定（僅 22:30 - 00:00 開放）",
+        attWindowOverride: "管理員已臨時開啟點名",
+        overrideOpenBtn: "臨時開啟點名",
+        overrideCloseBtn: "恢復 22:30-00:00 鎖定",
+        markAllPresent: "篩選名單全體出席",
+        exportAttBtn: "匯出當日點名",
+        searchPlaceholder: "搜尋姓名、學號、房號、班級...",
+        allBuildings: "全部棟別",
+        allFloors: "全部樓層",
+        allFloorsInBuilding: "該棟全部樓層",
+        quickBuildingLabel: "1. 選擇棟別：",
+        quickFloorLabel: "2. 選擇樓層：",
+        selectGuideMsg: "請先在步驟 1 選擇棟別，再於步驟 2 選擇樓層以顯示點名名單。",
+        selectFloorGuideMsg: "已選擇 {building}，請選擇樓層以顯示點名名單。",
+        allAttendance: "全部點名狀態",
+        attPresent: "出席",
+        attAbsent: "缺席",
+        attLate: "晚歸",
+        colRoom: "棟別 / 樓層 / 房號",
+        colStudent: "姓名與班級",
+        colAttendance: "當日點名",
+        colNote: "點名備註",
+        colAction: "操作",
+        emptyText: "尚無符合的資料。",
+        officerSectionTitle: "幹部管理與即時點名狀態專區",
+        officerSectionSubtitle: "即時檢視各樓層幹部管轄範圍與當日點名統計",
+        colOfficerName: "幹部 / 帳號",
+        colOfficerScope: "管轄棟別與樓層",
+        colOfficerLiveAtt: "即時點名狀態",
+        viewOfficerFloorBtn: "前往此樓層",
+        leaveSectionTitle: "請假管理專區（獨立區塊）",
+        leaveSectionSubtitle: "獨立管理外宿／返家請假紀錄，與每日點名分開",
+        addLeaveBtn: "新增請假單",
+        colLeavePeriod: "請假時段",
+        colReason: "請假事由",
+        leaveEmptyText: "目前檢視範圍內尚無請假紀錄。",
+        repairSectionTitle: "報修管理專區（獨立區塊）",
+        repairSectionSubtitle: "獨立管理房間與設備報修紀錄，與每日點名分開",
+        addRepairBtn: "新增報修單",
+        colRepairItem: "報修項目",
+        colRepairStatus: "處理狀態",
+        repairEmptyText: "目前檢視範圍內尚無報修紀錄。",
+        repairPending: "處理中",
+        repairDone: "已完工",
+        markDoneBtn: "標記完工",
+        modalAddTitle: "新增住宿生資料",
+        modalEditTitle: "更新住宿生資料",
+        lblBuilding: "棟別",
+        lblFloor: "樓層",
+        lblRoom: "房號",
+        lblName: "姓名",
+        lblStudentId: "學號（登入帳號）",
+        lblClass: "班級",
+        lblNote: "點名備註",
+        roomPlaceholder: "例：101-1",
+        namePlaceholder: "例：趙德原",
+        idPlaceholder: "例：B1120101",
+        notePlaceholder: "例：公車延誤晚歸 15 分鐘...",
+        cancelBtn: "取消",
+        saveBtn: "儲存資料",
+        lblSelectStudent: "住宿生",
+        leaveModalTitle: "新增請假單",
+        leaveMetaLabel: "請假時段（起訖日期）",
+        leaveMetaPlaceholder: "例：2026/11/20 - 2026/11/22",
+        leaveDetailLabel: "請假事由",
+        leaveDetailPlaceholder: "例：返家、辦理私事...",
+        repairModalTitle: "新增報修單",
+        repairMetaLabel: "報修項目／設備",
+        repairMetaPlaceholder: "例：101-1 冷氣、浴室燈管",
+        repairDetailLabel: "故障狀況說明",
+        repairDetailPlaceholder: "例：不冷或有異音...",
+        sendReportBtn: "送出申請",
+        requestCreatedSuccess: "已成功建立申請紀錄！",
+        changePassTitle: "修改密碼",
+        oldPassLabel: "目前密碼",
+        newPassLabel: "新密碼",
+        savePassBtn: "確認修改",
+        oldPassWrong: "目前密碼輸入錯誤！",
+        passChangedSuccess: "密碼已成功更新！",
+        accountsModalTitle: "帳號、樓層指派、刪除與密碼總覽",
+        accountsModalDesc: "設定幹部樓層（1F - 9F+）、老師班級、刪除帳號並查看目前密碼",
+        accRoleLabel: "身分角色",
+        optOfficer: "樓層幹部",
+        optTeacher: "負責老師",
+        accUserLabel: "登入帳號",
+        accNameLabel: "顯示名稱",
+        addAccBtn: "新增帳號",
+        colAccUser: "帳號",
+        colAccName: "姓名",
+        colAccRole: "角色",
+        colAccScope: "管轄棟別 / 樓層 / 班級",
+        colAccPass: "目前密碼",
+        accExistsError: "此登入帳號已存在！",
+        confirmDeleteAcc: "確定要刪除帳號 {username} 嗎？",
+        floorPrefix: "樓層",
+        roomPrefix: "房號",
+        classPrefix: "班級",
+        editTitle: "編輯",
+        deleteTitle: "刪除",
+        confirmDelete: "確定要刪除此筆住宿資料嗎？",
+        csvHeaders: ["棟別", "樓層", "房號", "姓名", "學號", "班級", "備註"],
+        csvFileName: "宿舍住宿名單.csv",
+        attCsvHeaders: ["點名日期", "棟別", "樓層", "房號", "姓名", "學號", "班級", "點名狀態", "備註"],
+        attCsvFileName: "宿舍點名紀錄_{date}.csv",
+        templateFileName: "宿舍匯入範例.csv",
+        importSuccess: "已成功匯入 {count} 筆住宿生資料。",
+        importEmpty: "CSV 檔案中未找到可匯入的有效資料。"
+      }
+    };
+
+    const defaultStaffAccounts = [
+      { username: "admin", password: "123456", role: "ADMIN", displayName: "Admin (管理員)" },
+      { username: "canbo_1f", password: "123456", role: "OFFICER", displayName: "Cán bộ tầng 1F", assignedBuilding: "華苑樓", assignedFloor: "1F" },
+      { username: "canbo_2f", password: "123456", role: "OFFICER", displayName: "Cán bộ tầng 2F", assignedBuilding: "華苑樓", assignedFloor: "2F" },
+      { username: "canbo_3f", password: "123456", role: "OFFICER", displayName: "Cán bộ tầng 3F", assignedBuilding: "志清樓", assignedFloor: "3F" },
+      { username: "gv01", password: "123456", role: "TEACHER", displayName: "Thầy Lâm / 林老師", assignedClass: "Lớp A" }
+    ];
+
+    const buildingsList = ["華苑樓", "志清樓", "橫渠樓"];
+    const baseFloorsList = ["1F", "2F", "3F", "4F", "5F", "6F", "7F", "8F", "9F"];
+
+    let currentLang = localStorage.getItem("dorm_lang_v1") || "vi";
+    let currentUser = JSON.parse(localStorage.getItem("dorm_current_user_v2")) || null;
+    let adminOverrideAttendanceOpen = false;
+    let editingId = null;
+
+    // Luồng chọn Tòa -> Chọn Tầng -> Hiện danh sách
+    let hasSelectedBuildingStep = false;
+    let hasSelectedFloorStep = false;
+
+    const defaultData = [
+      { id: 1, building: "華苑樓", floor: "1F", room: "101-1", name: "趙德原", studentId: "B112001", className: "Lớp A", note: "Hồ sơ đầy đủ" },
+      { id: 2, building: "華苑樓", floor: "2F", room: "205-2", name: "阮文歡", studentId: "B112002", className: "Lớp A", note: "Cần nhắc nhở giờ giấc" },
+      { id: 3, building: "志清樓", floor: "3F", room: "304-1", name: "陳小武", studentId: "B112003", className: "Lớp B", note: "" }
+    ];
+
+    const defaultLeaveRequests = [
+      { id: 101, residentId: 2, period: "2026/11/20 - 2026/11/22", reason: "Về phép cuối tuần / 週末請假返家" }
+    ];
+
+    const defaultRepairRequests = [
+      { id: 201, residentId: 3, item: "Đèn phòng tắm / 浴室燈具", detail: "Đèn nhấp nháy khi bật", done: false }
+    ];
+
+    let residents = JSON.parse(localStorage.getItem("dorm_residents_v5")) || defaultData;
+    let staffAccounts = JSON.parse(localStorage.getItem("dorm_staff_accounts_v1")) || defaultStaffAccounts;
+    let studentPasswords = JSON.parse(localStorage.getItem("dorm_student_passwords_v1")) || {};
+    let attendanceRecords = JSON.parse(localStorage.getItem("dorm_attendance_v3")) || {};
+    let leaveRequests = JSON.parse(localStorage.getItem("dorm_leave_requests_v1")) || defaultLeaveRequests;
+    let repairRequests = JSON.parse(localStorage.getItem("dorm_repair_requests_v1")) || defaultRepairRequests;
+
+    function t(key) {
+      return translations[currentLang][key] || translations.vi[key] || key;
+    }
+
+    function getAllFloorsList() {
+      const extra = residents
+        .map(r => (r.floor || "").trim().toUpperCase())
+        .filter(f => f && !baseFloorsList.includes(f));
+      return [...baseFloorsList, ...new Set(extra)].sort((a, b) => {
+        const numA = parseInt(a, 10);
+        const numB = parseInt(b, 10);
+        if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+        return a.localeCompare(b);
+      });
+    }
+
+    function refreshFloorDropdowns() {
+      const allFloors = getAllFloorsList();
+      const filterFloorEl = document.getElementById("filterFloor");
+      const prevFilterFloor = filterFloorEl.value;
+      filterFloorEl.innerHTML = `<option value="ALL">${t("allFloors")}</option>` +
+        allFloors.map(f => `<option value="${f}">${f}</option>`).join("");
+      if ([...filterFloorEl.options].some(o => o.value === prevFilterFloor)) {
+        filterFloorEl.value = prevFilterFloor;
+      }
+
+      const modalFloorEl = document.getElementById("floor");
+      const prevModalFloor = modalFloorEl.value;
+      modalFloorEl.innerHTML = allFloors.map(f => `<option value="${f}">${f}</option>`).join("");
+      if (prevModalFloor && allFloors.includes(prevModalFloor)) {
+        modalFloorEl.value = prevModalFloor;
+      }
+
+      const accFloorEl = document.getElementById("newAccFloor");
+      const prevAccFloor = accFloorEl.value;
+      accFloorEl.innerHTML = allFloors.map(f => `<option value="${f}">${f}</option>`).join("");
+      if (prevAccFloor && allFloors.includes(prevAccFloor)) {
+        accFloorEl.value = prevAccFloor;
+      }
+    }
+
+    // Khung giờ điểm danh: 22:30 đến 00:00
+    function isWithinAttendanceWindow() {
+      const now = new Date();
+      const minutes = now.getHours() * 60 + now.getMinutes();
+      return minutes >= 22 * 60 + 30;
+    }
+
+    function canActAttendanceNow() {
+      if (!currentUser) return false;
+      if (currentUser.role === "ADMIN" && adminOverrideAttendanceOpen) return true;
+      return isWithinAttendanceWindow();
+    }
+
+    function toggleAdminOverrideWindow() {
+      if (!currentUser || currentUser.role !== "ADMIN") return;
+      adminOverrideAttendanceOpen = !adminOverrideAttendanceOpen;
+      renderTable();
+    }
+
+    function updateAttendanceWindowBadge() {
+      const badge = document.getElementById("attendanceWindowBadge");
+      const overrideBtn = document.getElementById("btnAdminOverrideWindow");
+      const overrideText = document.getElementById("overrideWindowBtnText");
+
+      const inWindow = isWithinAttendanceWindow();
+      const effectiveOpen = canActAttendanceNow();
+
+      if (currentUser && currentUser.role === "ADMIN") {
+        overrideBtn.classList.remove("hidden");
+        overrideText.textContent = adminOverrideAttendanceOpen ? t("overrideCloseBtn") : t("overrideOpenBtn");
+      } else {
+        overrideBtn.classList.add("hidden");
+      }
+
+      if (inWindow) {
+        badge.textContent = t("attWindowOpen");
+        badge.className = "text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800";
+      } else if (effectiveOpen) {
+        badge.textContent = t("attWindowOverride");
+        badge.className = "text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-100 text-amber-800";
+      } else {
+        badge.textContent = t("attWindowClosed");
+        badge.className = "text-xs font-semibold px-2.5 py-1 rounded-full bg-rose-100 text-rose-700";
+      }
+
+      const markAllBtn = document.getElementById("btnMarkAllPresent");
+      markAllBtn.disabled = !effectiveOpen;
+      markAllBtn.classList.toggle("opacity-50", !effectiveOpen);
+      markAllBtn.classList.toggle("cursor-not-allowed", !effectiveOpen);
+    }
+
+    function saveAccountsStorage() {
+      localStorage.setItem("dorm_staff_accounts_v1", JSON.stringify(staffAccounts));
+      localStorage.setItem("dorm_student_passwords_v1", JSON.stringify(studentPasswords));
+    }
+
+    function getAllAccountsList() {
+      const list = staffAccounts.map(acc => ({ ...acc }));
+      const seenUsernames = new Set(list.map(a => a.username.toLowerCase()));
+
+      residents.forEach(r => {
+        const sid = (r.studentId || "").trim();
+        if (sid && !seenUsernames.has(sid.toLowerCase())) {
+          seenUsernames.add(sid.toLowerCase());
+          list.push({
+            username: sid,
+            password: studentPasswords[sid] || "123456",
+            role: "STUDENT",
+            displayName: `${r.name} (${sid})`,
+            studentId: sid,
+            assignedBuilding: r.building,
+            assignedFloor: r.floor,
+            assignedClass: r.className
+          });
+        }
+      });
+
+      return list;
+    }
+
+    function getAttendanceLabel(code) {
+      if (code === "PRESENT") return t("attPresent");
+      if (code === "ABSENT") return t("attAbsent");
+      return t("attLate");
+    }
+
+    function onBuildingSelectChange(buildingValue) {
+      if (buildingValue === "ALL") {
+        hasSelectedBuildingStep = false;
+        hasSelectedFloorStep = false;
+        document.getElementById("filterFloor").value = "ALL";
+      } else {
+        hasSelectedBuildingStep = true;
+        hasSelectedFloorStep = false;
+        document.getElementById("filterFloor").value = "ALL";
+      }
+      renderTable();
+    }
+
+    function onFloorSelectChange(floorValue) {
+      if (document.getElementById("filterBuilding").value !== "ALL") {
+        hasSelectedBuildingStep = true;
+        hasSelectedFloorStep = true;
+      }
+      renderTable();
+    }
+
+    function selectBuildingTab(buildingValue) {
+      document.getElementById("filterBuilding").value = buildingValue;
+      onBuildingSelectChange(buildingValue);
+    }
+
+    function selectFloorTab(floorValue) {
+      document.getElementById("filterFloor").value = floorValue;
+      hasSelectedBuildingStep = true;
+      hasSelectedFloorStep = true;
+      renderTable();
+    }
+
+    function shouldShowRosterList() {
+      if (!currentUser) return false;
+      if (currentUser.role === "OFFICER" || currentUser.role === "STUDENT" || currentUser.role === "TEACHER") {
+        return true;
+      }
+      const keyword = document.getElementById("searchInput").value.trim();
+      if (keyword.length > 0) return true;
+
+      const bVal = document.getElementById("filterBuilding").value;
+      return bVal !== "ALL" && hasSelectedBuildingStep && hasSelectedFloorStep;
+    }
+
+    function renderBuildingAndFloorSteps(scopedList) {
+      const tabsBar = document.getElementById("buildingTabsBar");
+      const tabsList = document.getElementById("buildingTabsList");
+      const floorStepBar = document.getElementById("floorStepBar");
+      const floorTabsList = document.getElementById("floorTabsList");
+
+      if (!currentUser || currentUser.role === "STUDENT" || currentUser.role === "OFFICER" || currentUser.role === "TEACHER") {
+        tabsBar.classList.add("hidden");
+        floorStepBar.classList.add("hidden");
+        return;
+      }
+
+      tabsBar.classList.remove("hidden");
+      const activeBuilding = document.getElementById("filterBuilding").value;
+
+      const extraBuildings = scopedList
+        .map(r => r.building)
+        .filter(b => b && !buildingsList.includes(b));
+      const allBuildings = [...buildingsList, ...new Set(extraBuildings)];
+
+      const allCount = scopedList.length;
+      const allBtnCls = activeBuilding === "ALL"
+        ? "bg-indigo-600 text-white shadow-sm border-indigo-600"
+        : "bg-white text-slate-700 border-slate-300 hover:bg-indigo-50 hover:border-indigo-300";
+
+      let html = `
+        <button type="button" onclick="selectBuildingTab('ALL')" class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition flex items-center gap-1.5 ${allBtnCls}">
+          <span>${t("allBuildings")}</span>
+          <span class="px-1.5 py-0.2 rounded-full text-[11px] ${activeBuilding === "ALL" ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"}">${allCount}</span>
+        </button>
+      `;
+
+      allBuildings.forEach(bName => {
+        const count = scopedList.filter(r => r.building === bName).length;
+        const isActive = activeBuilding === bName && hasSelectedBuildingStep;
+        const btnCls = isActive
+          ? "bg-indigo-600 text-white shadow-sm border-indigo-600"
+          : "bg-white text-slate-700 border-slate-300 hover:bg-indigo-50 hover:border-indigo-300";
+        const badgeCls = isActive
+          ? "bg-white/20 text-white"
+          : "bg-slate-100 text-slate-600";
+
+        html += `
+          <button type="button" onclick="selectBuildingTab('${bName.replace(/'/g, "\\'")}')" class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition flex items-center gap-1.5 ${btnCls}">
+            <span>${bName}</span>
+            <span class="px-1.5 py-0.2 rounded-full text-[11px] ${badgeCls}">${count}</span>
+          </button>
+        `;
+      });
+      tabsList.innerHTML = html;
+
+      // Bước 2: Hiện các nút chọn tầng khi đã chọn tòa cụ thể
+      if (activeBuilding !== "ALL" && hasSelectedBuildingStep) {
+        floorStepBar.classList.remove("hidden");
+        const inBuilding = scopedList.filter(r => r.building === activeBuilding);
+        const activeFloor = document.getElementById("filterFloor").value;
+        const allFloors = getAllFloorsList();
+
+        const allFloorBtnCls = (activeFloor === "ALL" && hasSelectedFloorStep)
+          ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
+          : "bg-white text-slate-700 border-slate-300 hover:bg-indigo-100/70";
+
+        let floorHtml = `
+          <button type="button" onclick="selectFloorTab('ALL')" class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition flex items-center gap-1.5 ${allFloorBtnCls}">
+            <span>${t("allFloorsInBuilding")}</span>
+            <span class="px-1.5 py-0.2 rounded-full text-[11px] ${(activeFloor === "ALL" && hasSelectedFloorStep) ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"}">${inBuilding.length}</span>
+          </button>
+        `;
+
+        allFloors.forEach(fName => {
+          const fCount = inBuilding.filter(r => (r.floor || "1F").toUpperCase() === fName).length;
+          const isFloorActive = hasSelectedFloorStep && activeFloor === fName;
+          const fBtnCls = isFloorActive
+            ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
+            : "bg-white text-slate-700 border-slate-300 hover:bg-indigo-100/70";
+          const fBadgeCls = isFloorActive
+            ? "bg-white/20 text-white"
+            : "bg-slate-100 text-slate-600";
+
+          floorHtml += `
+            <button type="button" onclick="selectFloorTab('${fName}')" class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition flex items-center gap-1.5 ${fBtnCls}">
+              <span>${fName}</span>
+              <span class="px-1.5 py-0.2 rounded-full text-[11px] ${fBadgeCls}">${fCount}</span>
+            </button>
+          `;
+        });
+        floorTabsList.innerHTML = floorHtml;
+      } else {
+        floorStepBar.classList.add("hidden");
+        floorTabsList.innerHTML = "";
+      }
+    }
+
+    function quickLogin(username, password) {
+      document.getElementById("loginUsername").value = username;
+      document.getElementById("loginPassword").value = password;
+      loginWithCredentials(username, password);
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const username = document.getElementById("loginUsername").value.trim();
+      const password = document.getElementById("loginPassword").value.trim();
+      loginWithCredentials(username, password);
+    }
+
+    function loginWithCredentials(username, password) {
+      const allAccs = getAllAccountsList();
+      const found = allAccs.find(u => u.username.toLowerCase() === username.toLowerCase() && u.password === password);
+      const errEl = document.getElementById("loginError");
+
+      if (!found) {
+        errEl.textContent = t("loginInvalid");
+        errEl.classList.remove("hidden");
+        return;
+      }
+
+      errEl.classList.add("hidden");
+      currentUser = found;
+      hasSelectedBuildingStep = false;
+      hasSelectedFloorStep = false;
+      localStorage.setItem("dorm_current_user_v2", JSON.stringify(currentUser));
+      updateAuthUI();
+    }
+
+    function logout() {
+      currentUser = null;
+      adminOverrideAttendanceOpen = false;
+      hasSelectedBuildingStep = false;
+      hasSelectedFloorStep = false;
+      localStorage.removeItem("dorm_current_user_v2");
+      document.getElementById("loginPassword").value = "";
+      updateAuthUI();
+    }
+
+    function updateAuthUI() {
+      const loginScreen = document.getElementById("loginScreen");
+      const appContainer = document.getElementById("appContainer");
+
+      if (!currentUser) {
+        loginScreen.classList.remove("hidden");
+        appContainer.classList.add("hidden");
+        return;
+      }
+
+      const latestAcc = getAllAccountsList().find(a => a.username.toLowerCase() === currentUser.username.toLowerCase());
+      if (latestAcc) currentUser = latestAcc;
+
+      refreshFloorDropdowns();
+      loginScreen.classList.add("hidden");
+      appContainer.classList.remove("hidden");
+
+      const role = currentUser.role;
+      const isAdmin = role === "ADMIN";
+      const isOfficer = role === "OFFICER";
+      const canMarkAttendance = isAdmin || isOfficer;
+      const isStudent = role === "STUDENT";
+
+      let roleBadgeText = t("roleLabel_" + role);
+      if (role === "OFFICER") {
+        roleBadgeText = roleBadgeText
+          .replace("{building}", currentUser.assignedBuilding || "")
+          .replace("{floor}", currentUser.assignedFloor || "");
+      } else if (role === "TEACHER") {
+        roleBadgeText = roleBadgeText.replace("{class}", currentUser.assignedClass || "");
+      }
+      document.getElementById("userRoleBadge").textContent = roleBadgeText;
+      document.getElementById("welcomeUserText").textContent = `${t("welcomePrefix")} ${currentUser.displayName}`;
+
+      let notice = t("notice_" + role);
+      if (role === "OFFICER") {
+        notice = notice
+          .replace("{building}", currentUser.assignedBuilding || "")
+          .replace("{floor}", currentUser.assignedFloor || "");
+      } else if (role === "TEACHER") {
+        notice = notice.replace("{class}", currentUser.assignedClass || "");
+      }
+      document.getElementById("roleNoticeText").textContent = notice;
+
+      const filterBuildingEl = document.getElementById("filterBuilding");
+      const filterFloorEl = document.getElementById("filterFloor");
+      if (isOfficer) {
+        filterBuildingEl.value = currentUser.assignedBuilding;
+        filterFloorEl.value = currentUser.assignedFloor;
+        filterBuildingEl.disabled = true;
+        filterFloorEl.disabled = true;
+      } else {
+        filterBuildingEl.disabled = false;
+        filterFloorEl.disabled = false;
+      }
+
+      document.getElementById("officerManagementSection").classList.toggle("hidden", !isAdmin);
+      document.getElementById("btnManageAccounts").classList.toggle("hidden", !isAdmin);
+      document.getElementById("btnImportCSV").classList.toggle("hidden", !isAdmin);
+      document.getElementById("btnDownloadTemplate").classList.toggle("hidden", !isAdmin);
+      document.getElementById("btnAddStudent").classList.toggle("hidden", !isAdmin);
+      document.getElementById("btnExportCSV").classList.toggle("hidden", isStudent);
+      document.getElementById("btnMarkAllPresent").classList.toggle("hidden", !canMarkAttendance);
+      document.getElementById("btnExportAttendance").classList.toggle("hidden", isStudent);
+      document.getElementById("filterBar").classList.toggle("hidden", isStudent);
+      document.getElementById("colActionHeader").classList.toggle("hidden", !(isAdmin || isOfficer));
+
+      renderTable();
+    }
+
+    function openChangePasswordModal() {
+      document.getElementById("oldPasswordInput").value = "";
+      document.getElementById("newPasswordInput").value = "";
+      const msgEl = document.getElementById("changePassMsg");
+      msgEl.classList.add("hidden");
+      document.getElementById("changePasswordModal").classList.remove("hidden");
+      document.getElementById("changePasswordModal").classList.add("flex");
+    }
+
+    function closeChangePasswordModal() {
+      document.getElementById("changePasswordModal").classList.add("hidden");
+      document.getElementById("changePasswordModal").classList.remove("flex");
+    }
+
+    function submitChangePassword(e) {
+      e.preventDefault();
+      const oldPass = document.getElementById("oldPasswordInput").value.trim();
+      const newPass = document.getElementById("newPasswordInput").value.trim();
+      const msgEl = document.getElementById("changePassMsg");
+
+      const currentPass = currentUser.role === "STUDENT"
+        ? (studentPasswords[currentUser.studentId] || "123456")
+        : currentUser.password;
+
+      if (oldPass !== currentPass) {
+        msgEl.textContent = t("oldPassWrong");
+        msgEl.className = "text-xs font-medium px-3 py-2 rounded-lg bg-rose-50 text-rose-600";
+        msgEl.classList.remove("hidden");
+        return;
+      }
+
+      if (currentUser.role === "STUDENT") {
+        studentPasswords[currentUser.studentId] = newPass;
+      } else {
+        const idx = staffAccounts.findIndex(a => a.username.toLowerCase() === currentUser.username.toLowerCase());
+        if (idx !== -1) {
+          staffAccounts[idx].password = newPass;
+        }
+      }
+
+      saveAccountsStorage();
+      currentUser.password = newPass;
+      localStorage.setItem("dorm_current_user_v2", JSON.stringify(currentUser));
+
+      msgEl.textContent = t("passChangedSuccess");
+      msgEl.className = "text-xs font-medium px-3 py-2 rounded-lg bg-emerald-50 text-emerald-700";
+      msgEl.classList.remove("hidden");
+      setTimeout(() => closeChangePasswordModal(), 800);
+    }
+
+    function openAccountsModal() {
+      if (!currentUser || currentUser.role !== "ADMIN") return;
+      refreshFloorDropdowns();
+      toggleStaffAssignFields();
+      renderAccountsTable();
+      document.getElementById("accountsModal").classList.remove("hidden");
+      document.getElementById("accountsModal").classList.add("flex");
+    }
+
+    function closeAccountsModal() {
+      document.getElementById("accountsModal").classList.add("hidden");
+      document.getElementById("accountsModal").classList.remove("flex");
+    }
+
+    function toggleStaffAssignFields() {
+      const role = document.getElementById("newAccRole").value;
+      document.getElementById("officerAssignWrap").classList.toggle("hidden", role !== "OFFICER");
+      document.getElementById("teacherAssignWrap").classList.toggle("hidden", role !== "TEACHER");
+    }
+
+    function addStaffAccount(e) {
+      e.preventDefault();
+      const role = document.getElementById("newAccRole").value;
+      const username = document.getElementById("newAccUsername").value.trim();
+      const displayName = document.getElementById("newAccDisplayName").value.trim();
+
+      const exists = getAllAccountsList().some(a => a.username.toLowerCase() === username.toLowerCase());
+      if (exists) {
+        alert(t("accExistsError"));
+        return;
+      }
+
+      const newAcc = {
+        username,
+        password: "123456",
+        role,
+        displayName
+      };
+
+      if (role === "OFFICER") {
+        newAcc.assignedBuilding = document.getElementById("newAccBuilding").value;
+        newAcc.assignedFloor = document.getElementById("newAccFloor").value;
+      } else if (role === "TEACHER") {
+        newAcc.assignedClass = document.getElementById("newAccClass").value.trim() || "Lớp A";
+      }
+
+      staffAccounts.push(newAcc);
+      saveAccountsStorage();
+      document.getElementById("newAccUsername").value = "";
+      document.getElementById("newAccDisplayName").value = "";
+      document.getElementById("newAccClass").value = "";
+      renderAccountsTable();
+      renderTable();
+    }
+
+    function deleteAccount(username) {
+      if (!currentUser || currentUser.role !== "ADMIN") return;
+      if (username.toLowerCase() === "admin") return;
+      if (!confirm(t("confirmDeleteAcc").replace("{username}", username))) return;
+
+      staffAccounts = staffAccounts.filter(a => a.username.toLowerCase() !== username.toLowerCase());
+      if (studentPasswords[username]) {
+        delete studentPasswords[username];
+      }
+      saveAccountsStorage();
+      renderAccountsTable();
+      renderTable();
+    }
+
+    function updateOfficerAssignment(username, field, value) {
+      const acc = staffAccounts.find(a => a.username === username);
+      if (acc) {
+        acc[field] = value;
+        saveAccountsStorage();
+        renderAccountsTable();
+        renderTable();
+      }
+    }
+
+    function updateTeacherClass(username, value) {
+      const acc = staffAccounts.find(a => a.username === username);
+      if (acc) {
+        acc.assignedClass = value;
+        saveAccountsStorage();
+      }
+    }
+
+    function renderAccountsTable() {
+      const tbody = document.getElementById("accountsTableBody");
+      const all = getAllAccountsList();
+      const allFloors = getAllFloorsList();
+
+      tbody.innerHTML = all.map(acc => {
+        let scopeHTML = `<span class="text-slate-400">-</span>`;
+
+        if (acc.role === "OFFICER") {
+          const bOptions = buildingsList.map(b =>
+            `<option value="${b}" ${acc.assignedBuilding === b ? "selected" : ""}>${b}</option>`
+          ).join("");
+          const fOptions = allFloors.map(f =>
+            `<option value="${f}" ${acc.assignedFloor === f ? "selected" : ""}>${f}</option>`
+          ).join("");
+
+          scopeHTML = `
+            <div class="inline-flex items-center gap-1.5">
+              <select onchange="updateOfficerAssignment('${acc.username}', 'assignedBuilding', this.value)" class="border border-slate-300 rounded px-1.5 py-1 text-xs bg-white">${bOptions}</select>
+              <select onchange="updateOfficerAssignment('${acc.username}', 'assignedFloor', this.value)" class="border border-slate-300 rounded px-1.5 py-1 text-xs bg-white">${fOptions}</select>
+            </div>
+          `;
+        } else if (acc.role === "TEACHER") {
+          scopeHTML = `
+            <input type="text" value="${acc.assignedClass || ""}" onchange="updateTeacherClass('${acc.username}', this.value)" class="border border-slate-300 rounded px-2 py-1 text-xs w-28" />
+          `;
+        } else if (acc.role === "STUDENT") {
+          scopeHTML = `${acc.assignedBuilding || ""} · ${acc.assignedFloor || ""} · ${acc.assignedClass || ""}`;
+        }
+
+        const canDel = acc.username.toLowerCase() !== "admin";
+        const delBtn = canDel
+          ? `<button onclick="deleteAccount('${acc.username}')" class="text-rose-500 hover:text-rose-700 p-1 rounded hover:bg-rose-50" title="${t("deleteTitle")}"><i class="fa-solid fa-trash"></i></button>`
+          : `<span class="text-slate-300">-</span>`;
+
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="py-2.5 px-3 font-mono font-semibold text-indigo-700">${acc.username}</td>
+            <td class="py-2.5 px-3 font-medium text-slate-800">${acc.displayName}</td>
+            <td class="py-2.5 px-3">${acc.role}</td>
+            <td class="py-2.5 px-3">${scopeHTML}</td>
+            <td class="py-2.5 px-3">
+              <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-900 font-mono font-semibold">${acc.password}</span>
+            </td>
+            <td class="py-2.5 px-3 text-right">${delBtn}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    // Mục riêng của Admin: Quản lý Cán bộ & xem trạng thái điểm danh trực tiếp
+    function renderOfficerManagementSection() {
+      const section = document.getElementById("officerManagementSection");
+      if (!currentUser || currentUser.role !== "ADMIN") {
+        section.classList.add("hidden");
+        return;
+      }
+      section.classList.remove("hidden");
+
+      const officers = staffAccounts.filter(a => a.role === "OFFICER");
+      document.getElementById("officerCountBadge").textContent = officers.length;
+
+      const tbody = document.getElementById("officerLiveTableBody");
+      tbody.innerHTML = officers.map(off => {
+        const floorStudents = residents.filter(r =>
+          r.building === off.assignedBuilding && r.floor === off.assignedFloor
+        );
+        const totalFloor = floorStudents.length;
+        const presentFloor = floorStudents.filter(r => getAttendanceStatus(r) === "PRESENT").length;
+        const absentFloor = floorStudents.filter(r => getAttendanceStatus(r) === "ABSENT").length;
+        const lateFloor = floorStudents.filter(r => getAttendanceStatus(r) === "LATE").length;
+
+        return `
+          <tr class="hover:bg-indigo-50/30 transition">
+            <td class="py-3 px-4">
+              <div class="font-semibold text-slate-800">${off.displayName}</div>
+              <div class="text-xs font-mono text-indigo-600">${off.username}</div>
+            </td>
+            <td class="py-3 px-4">
+              <span class="font-semibold text-indigo-800">${off.assignedBuilding || "-"}</span>
+              <span class="text-xs text-slate-500">· ${t("floorPrefix")} ${off.assignedFloor || "-"}</span>
+            </td>
+            <td class="py-3 px-4">
+              <div class="flex flex-wrap gap-1.5 text-xs font-semibold">
+                <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">${t("statTotal")}: ${totalFloor}</span>
+                <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">${t("attPresent")}: ${presentFloor}</span>
+                <span class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-700">${t("attAbsent")}: ${absentFloor}</span>
+                <span class="px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">${t("attLate")}: ${lateFloor}</span>
+              </div>
+            </td>
+            <td class="py-3 px-4 text-right">
+              <button type="button" onclick="openOfficerFloor('${off.assignedBuilding}', '${off.assignedFloor}')" class="text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2.5 py-1.5 rounded-lg transition">
+                ${t("viewOfficerFloorBtn")}
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function openOfficerFloor(building, floor) {
+      document.getElementById("filterBuilding").value = building;
+      document.getElementById("filterFloor").value = floor;
+      hasSelectedBuildingStep = true;
+      hasSelectedFloorStep = true;
+      renderTable();
+    }
+
+    function getTodayString() {
+      const now = new Date();
+      const offset = now.getTimezoneOffset();
+      const localDate = new Date(now.getTime() - offset * 60 * 1000);
+      return localDate.toISOString().split("T")[0];
+    }
+
+    function setToday() {
+      document.getElementById("attendanceDate").value = getTodayString();
+      renderTable();
+    }
+
+    function getSelectedDate() {
+      const input = document.getElementById("attendanceDate");
+      if (!input.value) input.value = getTodayString();
+      return input.value;
+    }
+
+    function getAttendanceStatus(resident) {
+      const dateStr = getSelectedDate();
+      const dayMap = attendanceRecords[dateStr];
+      if (dayMap && dayMap[resident.id]) {
+        return dayMap[resident.id];
+      }
+      return "PRESENT";
+    }
+
+    function canModifyResident(resident) {
+      if (!currentUser || !canActAttendanceNow()) return false;
+      if (currentUser.role === "ADMIN") return true;
+      if (currentUser.role === "OFFICER") {
+        return resident.building === currentUser.assignedBuilding && resident.floor === currentUser.assignedFloor;
+      }
+      return false;
+    }
+
+    function setAttendanceStatus(residentId, attStatus) {
+      const resident = residents.find(r => r.id === residentId);
+      if (!resident || !canModifyResident(resident)) return;
+      const dateStr = getSelectedDate();
+      if (!attendanceRecords[dateStr]) {
+        attendanceRecords[dateStr] = {};
+      }
+      attendanceRecords[dateStr][residentId] = attStatus;
+      saveAttendanceToStorage();
+      renderTable();
+    }
+
+    function markAllFiltered(attStatus) {
+      if (!canActAttendanceNow()) return;
+      if (!currentUser || (currentUser.role !== "ADMIN" && currentUser.role !== "OFFICER")) return;
+      const filtered = getFilteredResidents().filter(r => canModifyResident(r));
+      if (filtered.length === 0) return;
+      const dateStr = getSelectedDate();
+      if (!attendanceRecords[dateStr]) {
+        attendanceRecords[dateStr] = {};
+      }
+      filtered.forEach(r => {
+        attendanceRecords[dateStr][r.id] = attStatus;
+      });
+      saveAttendanceToStorage();
+      renderTable();
+    }
+
+    function applyLanguageUI() {
+      document.documentElement.lang = currentLang === "zh" ? "zh-Hant" : "vi";
+
+      document.querySelectorAll(".lang-btn-vi").forEach(btn => {
+        btn.className = currentLang === "vi"
+          ? "lang-btn-vi px-2.5 py-1 rounded-md bg-white text-indigo-800 shadow-sm transition"
+          : "lang-btn-vi px-2.5 py-1 rounded-md text-slate-400 hover:text-indigo-600 transition";
+      });
+      document.querySelectorAll(".lang-btn-zh").forEach(btn => {
+        btn.className = currentLang === "zh"
+          ? "lang-btn-zh px-2.5 py-1 rounded-md bg-white text-indigo-800 shadow-sm transition"
+          : "lang-btn-zh px-2.5 py-1 rounded-md text-slate-400 hover:text-indigo-600 transition";
+      });
+
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        el.textContent = t(key);
+      });
+
+      document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+        const key = el.getAttribute("data-i18n-placeholder");
+        el.placeholder = t(key);
+      });
+
+      document.querySelectorAll("[data-i18n-title]").forEach(el => {
+        const key = el.getAttribute("data-i18n-title");
+        el.title = t(key);
+      });
+
+      document.getElementById("modalTitle").textContent = editingId ? t("modalEditTitle") : t("modalAddTitle");
+      if (currentUser) {
+        updateAuthUI();
+      }
+    }
+
+    function setLanguage(lang) {
+      if (lang !== "vi" && lang !== "zh") return;
+      currentLang = lang;
+      localStorage.setItem("dorm_lang_v1", lang);
+      applyLanguageUI();
+      if (currentUser) renderTable();
+    }
+
+    function saveToStorage() {
+      localStorage.setItem("dorm_residents_v5", JSON.stringify(residents));
+    }
+
+    function saveAttendanceToStorage() {
+      localStorage.setItem("dorm_attendance_v3", JSON.stringify(attendanceRecords));
+    }
+
+    function saveRequestsToStorage() {
+      localStorage.setItem("dorm_leave_requests_v1", JSON.stringify(leaveRequests));
+      localStorage.setItem("dorm_repair_requests_v1", JSON.stringify(repairRequests));
+    }
+
+    function getAttendanceCellHTML(resident) {
+      const current = getAttendanceStatus(resident);
+      const canEdit = canModifyResident(resident);
+
+      const badgeHTML = current === "PRESENT"
+        ? `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700"><i class="fa-solid fa-check mr-1"></i>${t("attPresent")}</span>`
+        : current === "ABSENT"
+          ? `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-700"><i class="fa-solid fa-xmark mr-1"></i>${t("attAbsent")}</span>`
+          : `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-700"><i class="fa-solid fa-person-running mr-1"></i>${t("attLate")}</span>`;
+
+      if (!canEdit) {
+        return badgeHTML;
+      }
+
+      const presentCls = current === "PRESENT"
+        ? "bg-emerald-600 text-white shadow-sm"
+        : "bg-slate-100 text-slate-600 hover:bg-emerald-50 hover:text-emerald-700";
+      const absentCls = current === "ABSENT"
+        ? "bg-rose-600 text-white shadow-sm"
+        : "bg-slate-100 text-slate-600 hover:bg-rose-50 hover:text-rose-700";
+      const lateCls = current === "LATE"
+        ? "bg-orange-500 text-white shadow-sm"
+        : "bg-slate-100 text-slate-600 hover:bg-orange-50 hover:text-orange-700";
+
+      return `
+        <div class="inline-flex flex-wrap gap-1.5">
+          <button type="button" onclick="setAttendanceStatus(${resident.id}, 'PRESENT')" class="px-2.5 py-1 rounded-lg text-xs font-semibold transition ${presentCls}">
+            <i class="fa-solid fa-check mr-1"></i>${t("attPresent")}
+          </button>
+          <button type="button" onclick="setAttendanceStatus(${resident.id}, 'ABSENT')" class="px-2.5 py-1 rounded-lg text-xs font-semibold transition ${absentCls}">
+            <i class="fa-solid fa-xmark mr-1"></i>${t("attAbsent")}
+          </button>
+          <button type="button" onclick="setAttendanceStatus(${resident.id}, 'LATE')" class="px-2.5 py-1 rounded-lg text-xs font-semibold transition ${lateCls}">
+            <i class="fa-solid fa-person-running mr-1"></i>${t("attLate")}
+          </button>
+        </div>
+      `;
+    }
+
+    function getScopedResidents() {
+      if (!currentUser) return [];
+      if (currentUser.role === "OFFICER") {
+        return residents.filter(r =>
+          r.building === currentUser.assignedBuilding &&
+          r.floor === currentUser.assignedFloor
+        );
+      }
+      if (currentUser.role === "TEACHER") {
+        return residents.filter(r => (r.className || "").toLowerCase() === (currentUser.assignedClass || "").toLowerCase());
+      }
+      if (currentUser.role === "STUDENT") {
+        return residents.filter(r => (r.studentId || "").toLowerCase() === (currentUser.studentId || "").toLowerCase());
+      }
+      return residents;
+    }
+
+    function getFilteredResidents() {
+      const scoped = getScopedResidents();
+      if (currentUser && currentUser.role === "STUDENT") return scoped;
+
+      const keyword = document.getElementById("searchInput").value.toLowerCase().trim();
+      const buildingFilter = document.getElementById("filterBuilding").value;
+      const floorFilter = document.getElementById("filterFloor").value;
+      const attFilter = document.getElementById("filterAttendance").value;
+
+      return scoped.filter(item => {
+        const matchKeyword = !keyword ||
+          (item.name || "").toLowerCase().includes(keyword) ||
+          (item.studentId || "").toLowerCase().includes(keyword) ||
+          (item.room || "").toLowerCase().includes(keyword) ||
+          (item.className || "").toLowerCase().includes(keyword);
+        const matchBuilding = buildingFilter === "ALL" || item.building === buildingFilter;
+        const matchFloor = floorFilter === "ALL" || (item.floor || "1F").toUpperCase() === floorFilter;
+        const attStatus = getAttendanceStatus(item);
+        const matchAtt = attFilter === "ALL" || attStatus === attFilter;
+        return matchKeyword && matchBuilding && matchFloor && matchAtt;
+      });
+    }
+
+    function renderDedicatedSections(scopedResidents) {
+      const scopedIds = new Set(scopedResidents.map(r => r.id));
+
+      const visibleLeaves = leaveRequests.filter(item => scopedIds.has(item.residentId));
+      document.getElementById("leaveCountBadge").textContent = visibleLeaves.length;
+      const leaveBody = document.getElementById("leaveTableBody");
+      const leaveEmpty = document.getElementById("leaveEmptyState");
+
+      if (visibleLeaves.length === 0) {
+        leaveBody.innerHTML = "";
+        leaveEmpty.classList.remove("hidden");
+      } else {
+        leaveEmpty.classList.add("hidden");
+        leaveBody.innerHTML = visibleLeaves.map(req => {
+          const res = residents.find(r => r.id === req.residentId);
+          if (!res) return "";
+          const canAct = (currentUser && (currentUser.role === "ADMIN" || currentUser.role === "STUDENT")) ||
+            (currentUser && currentUser.role === "OFFICER" && res.building === currentUser.assignedBuilding && res.floor === currentUser.assignedFloor);
+          return `
+            <tr class="hover:bg-amber-50/30 transition">
+              <td class="py-3 px-4">
+                <span class="font-semibold text-indigo-700">${res.building}</span>
+                <div class="text-xs text-slate-500">${t("floorPrefix")} ${res.floor} · ${t("roomPrefix")} ${res.room}</div>
+              </td>
+              <td class="py-3 px-4">
+                <div class="font-semibold text-slate-800">${res.name}</div>
+                <div class="text-xs text-slate-500">${res.studentId} · ${t("classPrefix")}: ${res.className}</div>
+              </td>
+              <td class="py-3 px-4 font-medium text-amber-800">${req.period}</td>
+              <td class="py-3 px-4 text-slate-600">${req.reason}</td>
+              <td class="py-3 px-4 text-right">
+                ${canAct ? `<button onclick="deleteLeaveRequest(${req.id})" class="text-rose-500 hover:text-rose-700 p-1.5 rounded hover:bg-rose-50" title="${t("deleteTitle")}"><i class="fa-solid fa-trash"></i></button>` : "-"}
+              </td>
+            </tr>
+          `;
+        }).join("");
+      }
+
+      const visibleRepairs = repairRequests.filter(item => scopedIds.has(item.residentId));
+      document.getElementById("repairCountBadge").textContent = visibleRepairs.length;
+      const repairBody = document.getElementById("repairTableBody");
+      const repairEmpty = document.getElementById("repairEmptyState");
+
+      if (visibleRepairs.length === 0) {
+        repairBody.innerHTML = "";
+        repairEmpty.classList.remove("hidden");
+      } else {
+        repairEmpty.classList.add("hidden");
+        repairBody.innerHTML = visibleRepairs.map(req => {
+          const res = residents.find(r => r.id === req.residentId);
+          if (!res) return "";
+          const canAct = (currentUser && (currentUser.role === "ADMIN" || currentUser.role === "STUDENT")) ||
+            (currentUser && currentUser.role === "OFFICER" && res.building === currentUser.assignedBuilding && res.floor === currentUser.assignedFloor);
+          const statusBadge = req.done
+            ? `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">${t("repairDone")}</span>`
+            : `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700">${t("repairPending")}</span>`;
+
+          return `
+            <tr class="hover:bg-purple-50/30 transition">
+              <td class="py-3 px-4">
+                <span class="font-semibold text-indigo-700">${res.building}</span>
+                <div class="text-xs text-slate-500">${t("floorPrefix")} ${res.floor} · ${t("roomPrefix")} ${res.room}</div>
+              </td>
+              <td class="py-3 px-4">
+                <div class="font-semibold text-slate-800">${res.name}</div>
+                <div class="text-xs text-slate-500">${res.studentId} · ${t("classPrefix")}: ${res.className}</div>
+              </td>
+              <td class="py-3 px-4">
+                <div class="font-semibold text-purple-900">${req.item}</div>
+                <div class="text-xs text-slate-500">${req.detail}</div>
+              </td>
+              <td class="py-3 px-4">${statusBadge}</td>
+              <td class="py-3 px-4 text-right space-x-1.5">
+                ${canAct && !req.done ? `<button onclick="toggleRepairDone(${req.id})" class="text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-lg transition">${t("markDoneBtn")}</button>` : ""}
+                ${canAct ? `<button onclick="deleteRepairRequest(${req.id})" class="text-rose-500 hover:text-rose-700 p-1.5 rounded hover:bg-rose-50" title="${t("deleteTitle")}"><i class="fa-solid fa-trash"></i></button>` : ""}
+              </td>
+            </tr>
+          `;
+        }).join("");
+      }
+    }
+
+    function renderTable() {
+      if (!currentUser) return;
+      refreshFloorDropdowns();
+      getSelectedDate();
+      updateAttendanceWindowBadge();
+
+      const scoped = getScopedResidents();
+      renderBuildingAndFloorSteps(scoped);
+
+      const total = scoped.length;
+      const presentCount = scoped.filter(r => getAttendanceStatus(r) === "PRESENT").length;
+      const absentCount = scoped.filter(r => getAttendanceStatus(r) === "ABSENT").length;
+      const lateCount = scoped.filter(r => getAttendanceStatus(r) === "LATE").length;
+      const rate = total > 0 ? Math.round((presentCount / total) * 100) : 0;
+
+      document.getElementById("statTotal").textContent = total;
+      document.getElementById("statAttPresent").textContent = presentCount;
+      document.getElementById("statAttAbsent").textContent = absentCount;
+      document.getElementById("statAttLate").textContent = lateCount;
+      document.getElementById("attendanceRateBadge").textContent = `${t("attPresent")}: ${rate}% (${presentCount}/${total})`;
+
+      const tbody = document.getElementById("dormTableBody");
+      const emptyState = document.getElementById("emptyState");
+      const selectGuideState = document.getElementById("selectGuideState");
+      const rosterTableWrapper = document.getElementById("rosterTableWrapper");
+
+      if (!shouldShowRosterList()) {
+        rosterTableWrapper.classList.add("hidden");
+        emptyState.classList.add("hidden");
+        selectGuideState.classList.remove("hidden");
+        const activeBuilding = document.getElementById("filterBuilding").value;
+        document.getElementById("selectGuideText").textContent =
+          (activeBuilding !== "ALL" && hasSelectedBuildingStep)
+            ? t("selectFloorGuideMsg").replace("{building}", activeBuilding)
+            : t("selectGuideMsg");
+      } else {
+        selectGuideState.classList.add("hidden");
+        const filtered = getFilteredResidents();
+
+        if (filtered.length === 0) {
+          rosterTableWrapper.classList.add("hidden");
+          tbody.innerHTML = "";
+          emptyState.classList.remove("hidden");
+        } else {
+          rosterTableWrapper.classList.remove("hidden");
+          emptyState.classList.add("hidden");
+          const isAdmin = currentUser.role === "ADMIN";
+          const isOfficer = currentUser.role === "OFFICER";
+
+          tbody.innerHTML = filtered.map(item => {
+            const canMod = canModifyResident(item);
+            let actionCell = "";
+            if (isAdmin) {
+              actionCell = `
+                <td class="py-3.5 px-4 text-right space-x-2">
+                  <button onclick="editStudent(${item.id})" class="text-indigo-600 hover:text-indigo-800 p-1.5 rounded hover:bg-indigo-50" title="${t("editTitle")}">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                  </button>
+                  <button onclick="deleteStudent(${item.id})" class="text-rose-500 hover:text-rose-700 p-1.5 rounded hover:bg-rose-50" title="${t("deleteTitle")}">
+                    <i class="fa-solid fa-trash"></i>
+                  </button>
+                </td>
+              `;
+            } else if (isOfficer && canMod) {
+              actionCell = `
+                <td class="py-3.5 px-4 text-right">
+                  <button onclick="editStudent(${item.id})" class="text-indigo-600 hover:text-indigo-800 p-1.5 rounded hover:bg-indigo-50" title="${t("editTitle")}">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                  </button>
+                </td>
+              `;
+            }
+
+            return `
+              <tr class="hover:bg-slate-50 transition">
+                <td class="py-3.5 px-4">
+                  <span class="font-semibold text-indigo-700">${item.building}</span>
+                  <div class="text-xs text-slate-500">${t("floorPrefix")} ${item.floor || "1F"} · ${t("roomPrefix")} ${item.room || "-"}</div>
+                </td>
+                <td class="py-3.5 px-4">
+                  <div class="font-semibold text-slate-800">${item.name || "-"}</div>
+                  <div class="text-xs text-slate-500">${item.studentId || "-"} · ${t("classPrefix")}: ${item.className || "-"}</div>
+                </td>
+                <td class="py-3.5 px-4">${getAttendanceCellHTML(item)}</td>
+                <td class="py-3.5 px-4 text-slate-600 max-w-xs truncate" title="${item.note || ""}">${item.note || "-"}</td>
+                ${actionCell}
+              </tr>
+            `;
+          }).join("");
+        }
+      }
+
+      renderOfficerManagementSection();
+      renderDedicatedSections(scoped);
+    }
+
+    function openDedicatedRequestModal(type) {
+      const scoped = getScopedResidents();
+      if (scoped.length === 0) return;
+
+      document.getElementById("reqType").value = type;
+      const selectEl = document.getElementById("reqResidentId");
+      selectEl.innerHTML = scoped.map(r =>
+        `<option value="${r.id}">${r.name} (${r.studentId}) - ${r.building} ${r.floor} ${r.room}</option>`
+      ).join("");
+
+      const metaInput = document.getElementById("reqMeta");
+      const detailInput = document.getElementById("reqDetail");
+
+      if (type === "LEAVE") {
+        document.getElementById("dedicatedModalTitle").textContent = t("leaveModalTitle");
+        document.getElementById("reqTimeOrItemLabel").textContent = t("leaveMetaLabel");
+        metaInput.placeholder = t("leaveMetaPlaceholder");
+        document.getElementById("reqDetailLabel").textContent = t("leaveDetailLabel");
+        detailInput.placeholder = t("leaveDetailPlaceholder");
+      } else {
+        document.getElementById("dedicatedModalTitle").textContent = t("repairModalTitle");
+        document.getElementById("reqTimeOrItemLabel").textContent = t("repairMetaLabel");
+        metaInput.placeholder = t("repairMetaPlaceholder");
+        document.getElementById("reqDetailLabel").textContent = t("repairDetailLabel");
+        detailInput.placeholder = t("repairDetailPlaceholder");
+      }
+
+      metaInput.value = "";
+      detailInput.value = "";
+      document.getElementById("dedicatedRequestModal").classList.remove("hidden");
+      document.getElementById("dedicatedRequestModal").classList.add("flex");
+    }
+
+    function closeDedicatedRequestModal() {
+      document.getElementById("dedicatedRequestModal").classList.add("hidden");
+      document.getElementById("dedicatedRequestModal").classList.remove("flex");
+    }
+
+    function submitDedicatedRequest(e) {
+      e.preventDefault();
+      const type = document.getElementById("reqType").value;
+      const residentId = Number(document.getElementById("reqResidentId").value);
+      const meta = document.getElementById("reqMeta").value.trim();
+      const detail = document.getElementById("reqDetail").value.trim();
+
+      if (type === "LEAVE") {
+        leaveRequests.unshift({ id: Date.now(), residentId, period: meta, reason: detail });
+      } else {
+        repairRequests.unshift({ id: Date.now(), residentId, item: meta, detail, done: false });
+      }
+
+      saveRequestsToStorage();
+      closeDedicatedRequestModal();
+      renderTable();
+      alert(t("requestCreatedSuccess"));
+    }
+
+    function deleteLeaveRequest(id) {
+      leaveRequests = leaveRequests.filter(item => item.id !== id);
+      saveRequestsToStorage();
+      renderTable();
+    }
+
+    function toggleRepairDone(id) {
+      const target = repairRequests.find(item => item.id === id);
+      if (target) {
+        target.done = !target.done;
+        saveRequestsToStorage();
+        renderTable();
+      }
+    }
+
+    function deleteRepairRequest(id) {
+      repairRequests = repairRequests.filter(item => item.id !== id);
+      saveRequestsToStorage();
+      renderTable();
+    }
+
+    function normalizeFloor(rawFloor) {
+      const cleaned = (rawFloor || "").trim().toUpperCase();
+      if (!cleaned) return "1F";
+      if (/^\d+$/.test(cleaned)) return `${cleaned}F`;
+      return cleaned;
+    }
+
+    function normalizeBuilding(rawBuilding) {
+      const b = (rawBuilding || "").trim();
+      if (buildingsList.includes(b)) return b;
+      return b || "華苑樓";
+    }
+
+    function parseCSV(text) {
+      const cleanText = text.replace(/^\uFEFF/, "");
+      const rows = [];
+      let currentRow = [];
+      let currentField = "";
+      let inQuotes = false;
+
+      for (let i = 0; i < cleanText.length; i++) {
+        const char = cleanText[i];
+        const nextChar = cleanText[i + 1];
+
+        if (inQuotes) {
+          if (char === '"' && nextChar === '"') {
+            currentField += '"';
+            i++;
+          } else if (char === '"') {
+            inQuotes = false;
+          } else {
+            currentField += char;
+          }
+        } else {
+          if (char === '"') {
+            inQuotes = true;
+          } else if (char === ",") {
+            currentRow.push(currentField.trim());
+            currentField = "";
+          } else if (char === "\r" && nextChar === "\n") {
+            currentRow.push(currentField.trim());
+            rows.push(currentRow);
+            currentRow = [];
+            currentField = "";
+            i++;
+          } else if (char === "\n" || char === "\r") {
+            currentRow.push(currentField.trim());
+            rows.push(currentRow);
+            currentRow = [];
+            currentField = "";
+          } else {
+            currentField += char;
+          }
+        }
+      }
+
+      if (currentField.length > 0 || currentRow.length > 0) {
+        currentRow.push(currentField.trim());
+        rows.push(currentRow);
+      }
+
+      return rows.filter(r => r.some(cell => cell !== ""));
+    }
+
+    function triggerImportCSV() {
+      document.getElementById("csvFileInput").click();
+    }
+
+    function handleImportCSV(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const rows = parseCSV(e.target.result);
+        if (rows.length === 0) {
+          alert(t("importEmpty"));
+          event.target.value = "";
+          return;
+        }
+
+        const firstCell = (rows[0][0] || "").toLowerCase();
+        const isHeader = ["toa nha", "tòa nhà", "棟別", "building"].includes(firstCell);
+        const dataRows = isHeader ? rows.slice(1) : rows;
+
+        let importedCount = 0;
+        const newItems = [];
+
+        dataRows.forEach((cols, idx) => {
+          const building = normalizeBuilding(cols[0]);
+          const floor = normalizeFloor(cols[1]);
+          const room = (cols[2] || "").trim();
+          const name = (cols[3] || "").trim();
+          const studentId = (cols[4] || "").trim();
+          const className = (cols[5] || "Lớp A").trim();
+          const note = (cols[6] || "").trim();
+
+          if (name || studentId || room) {
+            newItems.push({
+              id: Date.now() + idx + Math.floor(Math.random() * 1000),
+              building,
+              floor,
+              room,
+              name,
+              studentId,
+              className,
+              note
+            });
+            if (studentId && !studentPasswords[studentId]) {
+              studentPasswords[studentId] = "123456";
+            }
+            importedCount++;
+          }
+        });
+
+        if (importedCount === 0) {
+          alert(t("importEmpty"));
+          event.target.value = "";
+          return;
+        }
+
+        residents = [...newItems, ...residents];
+        saveToStorage();
+        saveAccountsStorage();
+        renderTable();
+        alert(t("importSuccess").replace("{count}", importedCount));
+        event.target.value = "";
+      };
+
+      reader.readAsText(file, "utf-8");
+    }
+
+    function downloadTemplateCSV() {
+      const headers = t("csvHeaders").join(",");
+      const sampleRows = [
+        `"華苑樓","1F","102-1","林大明","B113010","Lớp A",""`,
+        `"橫渠樓","9F","901-1","Trần Minh","B113011","Lớp B",""`
+      ];
+      const csvContent = "\uFEFF" + [headers, ...sampleRows].join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = t("templateFileName");
+      link.click();
+    }
+
+    function openModal() {
+      refreshFloorDropdowns();
+      editingId = null;
+      document.getElementById("editId").value = "";
+      document.getElementById("studentForm").reset();
+      const currentBuildingFilter = document.getElementById("filterBuilding").value;
+      const currentFloorFilter = document.getElementById("filterFloor").value;
+      if (buildingsList.includes(currentBuildingFilter)) {
+        document.getElementById("building").value = currentBuildingFilter;
+      }
+      const allFloors = getAllFloorsList();
+      if (allFloors.includes(currentFloorFilter)) {
+        document.getElementById("floor").value = currentFloorFilter;
+      }
+      document.getElementById("modalTitle").textContent = t("modalAddTitle");
+      document.getElementById("formModal").classList.remove("hidden");
+      document.getElementById("formModal").classList.add("flex");
+    }
+
+    function closeModal() {
+      editingId = null;
+      document.getElementById("formModal").classList.add("hidden");
+      document.getElementById("formModal").classList.remove("flex");
+    }
+
+    function saveStudent(e) {
+      e.preventDefault();
+      const editId = document.getElementById("editId").value;
+      const sid = document.getElementById("studentId").value.trim();
+      const data = {
+        building: document.getElementById("building").value,
+        floor: document.getElementById("floor").value,
+        room: document.getElementById("room").value.trim(),
+        name: document.getElementById("name").value.trim(),
+        studentId: sid,
+        className: document.getElementById("className").value.trim(),
+        note: document.getElementById("note").value.trim()
+      };
+
+      if (sid && !studentPasswords[sid]) {
+        studentPasswords[sid] = "123456";
+        saveAccountsStorage();
+      }
+
+      if (editId) {
+        const index = residents.findIndex(r => r.id == editId);
+        if (index !== -1) residents[index] = { ...residents[index], ...data };
+      } else {
+        residents.unshift({ id: Date.now(), ...data });
+      }
+
+      saveToStorage();
+      renderTable();
+      closeModal();
+    }
+
+    function editStudent(id) {
+      const item = residents.find(r => r.id === id);
+      if (!item || !canModifyResident(item)) return;
+      refreshFloorDropdowns();
+      editingId = item.id;
+      document.getElementById("editId").value = item.id;
+      document.getElementById("building").value = item.building;
+      document.getElementById("floor").value = item.floor || "1F";
+      document.getElementById("room").value = item.room;
+      document.getElementById("name").value = item.name;
+      document.getElementById("studentId").value = item.studentId;
+      document.getElementById("className").value = item.className || "Lớp A";
+      document.getElementById("note").value = item.note;
+      document.getElementById("modalTitle").textContent = t("modalEditTitle");
+      document.getElementById("formModal").classList.remove("hidden");
+      document.getElementById("formModal").classList.add("flex");
+    }
+
+    function deleteStudent(id) {
+      if (!currentUser || currentUser.role !== "ADMIN") return;
+      if (confirm(t("confirmDelete"))) {
+        residents = residents.filter(r => r.id !== id);
+        saveToStorage();
+        renderTable();
+      }
+    }
+
+    function exportCSV() {
+      const scoped = getScopedResidents();
+      const headers = t("csvHeaders").join(",");
+      const rows = scoped.map(r => {
+        return `"${r.building}","${r.floor || "1F"}","${r.room}","${r.name}","${r.studentId}","${r.className || ""}","${(r.note || "").replace(/"/g, '""')}"`;
+      });
+      const csvContent = "\uFEFF" + [headers, ...rows].join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = t("csvFileName");
+      link.click();
+    }
+
+    function exportAttendanceCSV() {
+      const dateStr = getSelectedDate();
+      const scoped = getScopedResidents();
+      const headers = t("attCsvHeaders").join(",");
+      const rows = scoped.map(r => {
+        const att = getAttendanceStatus(r);
+        const attLabel = getAttendanceLabel(att);
+        return `"${dateStr}","${r.building}","${r.floor || "1F"}","${r.room}","${r.name}","${r.studentId}","${r.className || ""}","${attLabel}","${(r.note || "").replace(/"/g, '""')}"`;
+      });
+      const csvContent = "\uFEFF" + [headers, ...rows].join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = t("attCsvFileName").replace("{date}", dateStr);
+      link.click();
+    }
+
+    document.getElementById("attendanceDate").value = getTodayString();
+    applyLanguageUI();
+    updateAuthUI();
+    setInterval(() => {
+      if (currentUser) updateAttendanceWindowBadge();
+    }, 60000);
+  </script>
+</body>
+</html>
