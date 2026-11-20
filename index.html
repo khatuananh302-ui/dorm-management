@@ -34,7 +34,7 @@
           <label data-i18n="usernameLabel" class="block text-xs font-semibold text-slate-600 mb-1">Tên đăng nhập / Mã SV</label>
           <div class="relative">
             <i class="fa-solid fa-user absolute left-3 top-3 text-slate-400 text-sm"></i>
-            <input id="loginUsername" type="text" required data-i18n-placeholder="usernamePlaceholder" placeholder="VD: admin, canbo_1f, gv01, B112001" class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            <input id="loginUsername" type="text" required data-i18n-placeholder="usernamePlaceholder" placeholder="VD: admin, canbo_1f, gvcn01, qktx01, B112001" class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
           </div>
         </div>
 
@@ -298,7 +298,7 @@
           </div>
           <div class="flex items-center gap-2">
             <span id="leaveCountBadge" class="text-xs font-bold px-2.5 py-1 rounded-full bg-amber-200/80 text-amber-950">0</span>
-            <button type="button" onclick="openDedicatedRequestModal('LEAVE')" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow transition flex items-center gap-1.5">
+            <button id="btnAddLeave" type="button" onclick="openDedicatedRequestModal('LEAVE')" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow transition flex items-center gap-1.5">
               <i class="fa-solid fa-plus"></i>
               <span data-i18n="addLeaveBtn">Tạo đơn nghỉ phép</span>
             </button>
@@ -338,7 +338,7 @@
           </div>
           <div class="flex items-center gap-2">
             <span id="repairCountBadge" class="text-xs font-bold px-2.5 py-1 rounded-full bg-purple-200/80 text-purple-950">0</span>
-            <button type="button" onclick="openDedicatedRequestModal('REPAIR')" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow transition flex items-center gap-1.5">
+            <button id="btnAddRepair" type="button" onclick="openDedicatedRequestModal('REPAIR')" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow transition flex items-center gap-1.5">
               <i class="fa-solid fa-plus"></i>
               <span data-i18n="addRepairBtn">Tạo phiếu báo sửa</span>
             </button>
@@ -479,13 +479,13 @@
     </div>
   </div>
 
-  <!-- Modal Quản Lý Tài Khoản, Phân Tầng, Xóa TK & Xem Mật Khẩu (Admin) -->
+  <!-- Modal Quản Lý Tài Khoản, Phân Tầng, Phân Loại Giáo Viên, Xóa TK & Xem Mật Khẩu (Admin) -->
   <div id="accountsModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-2xl max-w-4xl w-full p-6 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-5xl w-full p-6 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b pb-3">
         <div>
           <h2 data-i18n="accountsModalTitle" class="text-lg font-bold text-slate-800">Quản Lý Tài Khoản, Phân Tầng & Mật Khẩu</h2>
-          <p data-i18n="accountsModalDesc" class="text-xs text-slate-500">Phân tầng cán bộ (1F - 9F+), phân lớp giáo viên, xóa tài khoản và xem mật khẩu hiện tại</p>
+          <p data-i18n="accountsModalDesc" class="text-xs text-slate-500">Phân tầng cán bộ (1F - 9F+), phân GV quản lý KTX / GV chủ nhiệm, xóa tài khoản và xem mật khẩu hiện tại</p>
         </div>
         <button onclick="closeAccountsModal()" class="text-slate-400 hover:text-slate-600">
           <i class="fa-solid fa-xmark text-lg"></i>
@@ -497,16 +497,17 @@
           <label data-i18n="accRoleLabel" class="block text-[11px] font-semibold text-slate-600 mb-1">Vai trò</label>
           <select id="newAccRole" onchange="toggleStaffAssignFields()" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-xs bg-white">
             <option value="OFFICER" data-i18n="optOfficer">Cán bộ tầng</option>
-            <option value="TEACHER" data-i18n="optTeacher">Giáo viên</option>
+            <option value="DORM_TEACHER" data-i18n="optDormTeacher">GV quản lý KTX</option>
+            <option value="HOMEROOM_TEACHER" data-i18n="optHomeroomTeacher">GV chủ nhiệm</option>
           </select>
         </div>
         <div>
           <label data-i18n="accUserLabel" class="block text-[11px] font-semibold text-slate-600 mb-1">Tên đăng nhập</label>
-          <input id="newAccUsername" type="text" required placeholder="VD: canbo_8f / gv02" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs bg-white" />
+          <input id="newAccUsername" type="text" required placeholder="VD: canbo_8f / qktx02 / gvcn02" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs bg-white" />
         </div>
         <div>
           <label data-i18n="accNameLabel" class="block text-[11px] font-semibold text-slate-600 mb-1">Tên hiển thị</label>
-          <input id="newAccDisplayName" type="text" required placeholder="VD: Cán bộ 8F / Cô Mai" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs bg-white" />
+          <input id="newAccDisplayName" type="text" required placeholder="VD: Cán bộ 8F / Thầy Trần" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs bg-white" />
         </div>
         <div id="officerAssignWrap" class="sm:col-span-2 grid grid-cols-2 gap-2">
           <div>
@@ -522,8 +523,17 @@
             <select id="newAccFloor" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-xs bg-white"></select>
           </div>
         </div>
+        <div id="dormTeacherAssignWrap" class="hidden sm:col-span-2">
+          <label data-i18n="lblDormTeacherBuilding" class="block text-[11px] font-semibold text-slate-600 mb-1">Tòa KTX phụ trách</label>
+          <select id="newAccDormBuilding" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs bg-white">
+            <option value="ALL" data-i18n="allDormBuildingsScope">Tất cả tòa nhà (Toàn KTX)</option>
+            <option value="華苑樓">華苑樓</option>
+            <option value="志清樓">志清樓</option>
+            <option value="橫渠樓">橫渠樓</option>
+          </select>
+        </div>
         <div id="teacherAssignWrap" class="hidden sm:col-span-2">
-          <label data-i18n="lblClass" class="block text-[11px] font-semibold text-slate-600 mb-1">Lớp phụ trách</label>
+          <label data-i18n="lblClass" class="block text-[11px] font-semibold text-slate-600 mb-1">Lớp chủ nhiệm</label>
           <input id="newAccClass" type="text" placeholder="VD: Lớp B" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs bg-white" />
         </div>
         <div>
@@ -575,17 +585,21 @@
         loginTitle: "Đăng Nhập Hệ Thống KTX",
         loginSubtitle: "Đăng nhập bằng tài khoản, giáo viên hoặc Mã SV (Mật khẩu đầu: 123456)",
         usernameLabel: "Tên đăng nhập / Mã SV",
-        usernamePlaceholder: "VD: admin, canbo_1f, gv01, B112001",
+        usernamePlaceholder: "VD: admin, canbo_1f, qktx01, gvcn01, B112001",
         passwordLabel: "Mật khẩu",
         loginBtn: "Đăng Nhập",
         loginInvalid: "Sai tên đăng nhập hoặc mật khẩu!",
         roleLabel_ADMIN: "Quản trị viên (Admin)",
         roleLabel_OFFICER: "Cán bộ tầng ({building} · {floor})",
-        roleLabel_TEACHER: "Giáo viên ({class})",
+        roleLabel_DORM_TEACHER: "GV quản lý KTX ({buildingScope})",
+        roleLabel_HOMEROOM_TEACHER: "GV chủ nhiệm ({class})",
+        roleLabel_TEACHER: "GV chủ nhiệm ({class})",
         roleLabel_STUDENT: "Sinh viên nội trú",
         notice_ADMIN: "Quyền Admin: Chọn Tòa → Chọn Tầng để mở danh sách điểm danh. Khung giờ điểm danh 22:30–00:00 (hỗ trợ tầng 1F–9F+).",
         notice_OFFICER: "Quyền Cán bộ tầng ({building} · {floor}): Chỉ xem và điểm danh sinh viên {building} - tầng {floor} trong khung 22:30–00:00.",
-        notice_TEACHER: "Quyền Giáo viên ({class}): Chỉ hiển thị sinh viên thuộc {class} (chế độ chỉ xem).",
+        notice_DORM_TEACHER: "Quyền GV quản lý KTX ({buildingScope}): Theo dõi sinh viên, điểm danh, nghỉ phép ngoài và báo sửa chữa thuộc phạm vi KTX được giao (chỉ xem).",
+        notice_HOMEROOM_TEACHER: "Quyền GV chủ nhiệm ({class}): Chỉ hiển thị sinh viên thuộc {class} (chế độ chỉ xem).",
+        notice_TEACHER: "Quyền GV chủ nhiệm ({class}): Chỉ hiển thị sinh viên thuộc {class} (chế độ chỉ xem).",
         notice_STUDENT: "Quyền Sinh viên: Đăng nhập bằng Mã SV (mật khẩu đầu 123456). Có thể đổi mật khẩu và gửi đơn Nghỉ phép ngoài hoặc Báo sửa chữa.",
         welcomePrefix: "Xin chào,",
         logoutBtn: "Đăng xuất",
@@ -612,6 +626,7 @@
         exportAttBtn: "Xuất điểm danh ngày",
         searchPlaceholder: "Tìm theo tên, mã SV, số phòng, lớp...",
         allBuildings: "Tất cả tòa nhà",
+        allDormBuildingsScope: "Tất cả tòa nhà (Toàn KTX)",
         allFloors: "Tất cả tầng",
         allFloorsInBuilding: "Tất cả tầng của tòa",
         quickBuildingLabel: "1. Chọn tòa nhà:",
@@ -652,11 +667,12 @@
         modalAddTitle: "Thêm Sinh Viên Nội Trú",
         modalEditTitle: "Cập Nhật Thông Tin",
         lblBuilding: "Tòa nhà",
+        lblDormTeacherBuilding: "Tòa KTX phụ trách",
         lblFloor: "Tầng",
         lblRoom: "Số phòng",
         lblName: "Họ và Tên",
         lblStudentId: "Mã SV (Tài khoản)",
-        lblClass: "Lớp học",
+        lblClass: "Lớp chủ nhiệm",
         lblNote: "Ghi chú điểm danh",
         roomPlaceholder: "VD: 101-1",
         namePlaceholder: "VD: 趙德原",
@@ -684,10 +700,17 @@
         oldPassWrong: "Mật khẩu hiện tại không đúng!",
         passChangedSuccess: "Đã đổi mật khẩu thành công!",
         accountsModalTitle: "Quản Lý Tài Khoản, Phân Tầng & Mật Khẩu",
-        accountsModalDesc: "Phân tầng cán bộ (1F - 9F+), phân lớp giáo viên, xóa tài khoản và xem mật khẩu hiện tại",
+        accountsModalDesc: "Phân tầng cán bộ (1F - 9F+), phân GV quản lý KTX / GV chủ nhiệm, xóa tài khoản và xem mật khẩu hiện tại",
         accRoleLabel: "Vai trò",
         optOfficer: "Cán bộ tầng",
-        optTeacher: "Giáo viên",
+        optDormTeacher: "GV quản lý KTX",
+        optHomeroomTeacher: "GV chủ nhiệm",
+        roleShort_ADMIN: "Admin",
+        roleShort_OFFICER: "Cán bộ tầng",
+        roleShort_DORM_TEACHER: "GV quản lý KTX",
+        roleShort_HOMEROOM_TEACHER: "GV chủ nhiệm",
+        roleShort_TEACHER: "GV chủ nhiệm",
+        roleShort_STUDENT: "Sinh viên",
         accUserLabel: "Tên đăng nhập",
         accNameLabel: "Tên hiển thị",
         addAccBtn: "Thêm TK",
@@ -716,17 +739,21 @@
         loginTitle: "宿舍管理系統登入",
         loginSubtitle: "可使用帳號、老師帳號或學號登入（初始密碼皆為 123456）",
         usernameLabel: "帳號 / 學號",
-        usernamePlaceholder: "例：admin, canbo_1f, gv01, B112001",
+        usernamePlaceholder: "例：admin, canbo_1f, qktx01, gvcn01, B112001",
         passwordLabel: "密碼",
         loginBtn: "登入系統",
         loginInvalid: "帳號或密碼錯誤，請重新輸入！",
         roleLabel_ADMIN: "系統管理員 (Admin)",
         roleLabel_OFFICER: "樓層幹部 ({building} · {floor})",
-        roleLabel_TEACHER: "負責老師 ({class})",
+        roleLabel_DORM_TEACHER: "宿舍管理老師 ({buildingScope})",
+        roleLabel_HOMEROOM_TEACHER: "導師 / 班級老師 ({class})",
+        roleLabel_TEACHER: "導師 / 班級老師 ({class})",
         roleLabel_STUDENT: "住宿生",
         notice_ADMIN: "管理員權限：先選棟別 → 再選樓層後顯示點名名單。點名時段 22:30–00:00（支援 1F–9F+）。",
         notice_OFFICER: "樓層幹部權限（{building} · {floor}）：僅於 22:30–00:00 可對 {building} {floor} 進行點名。",
-        notice_TEACHER: "負責老師權限（{class}）：僅顯示 {class} 住宿生資料（唯讀）。",
+        notice_DORM_TEACHER: "宿舍管理老師權限（{buildingScope}）：可檢視所轄宿舍棟別的住宿生、點名、請假與報修紀錄（唯讀）。",
+        notice_HOMEROOM_TEACHER: "導師 / 班級老師權限（{class}）：僅顯示 {class} 住宿生資料（唯讀）。",
+        notice_TEACHER: "導師 / 班級老師權限（{class}）：僅顯示 {class} 住宿生資料（唯讀）。",
         notice_STUDENT: "住宿生權限：以學號登入（初始密碼 123456），可修改密碼並於下方獨立區塊提交請假或報修。",
         welcomePrefix: "您好，",
         logoutBtn: "登出",
@@ -753,6 +780,7 @@
         exportAttBtn: "匯出當日點名",
         searchPlaceholder: "搜尋姓名、學號、房號、班級...",
         allBuildings: "全部棟別",
+        allDormBuildingsScope: "全部棟別（全宿舍）",
         allFloors: "全部樓層",
         allFloorsInBuilding: "該棟全部樓層",
         quickBuildingLabel: "1. 選擇棟別：",
@@ -793,11 +821,12 @@
         modalAddTitle: "新增住宿生資料",
         modalEditTitle: "更新住宿生資料",
         lblBuilding: "棟別",
+        lblDormTeacherBuilding: "管轄宿舍棟別",
         lblFloor: "樓層",
         lblRoom: "房號",
         lblName: "姓名",
         lblStudentId: "學號（登入帳號）",
-        lblClass: "班級",
+        lblClass: "負責班級",
         lblNote: "點名備註",
         roomPlaceholder: "例：101-1",
         namePlaceholder: "例：趙德原",
@@ -825,10 +854,17 @@
         oldPassWrong: "目前密碼輸入錯誤！",
         passChangedSuccess: "密碼已成功更新！",
         accountsModalTitle: "帳號、樓層指派、刪除與密碼總覽",
-        accountsModalDesc: "設定幹部樓層（1F - 9F+）、老師班級、刪除帳號並查看目前密碼",
+        accountsModalDesc: "設定幹部樓層（1F - 9F+）、宿舍管理老師與導師班級、刪除帳號並查看目前密碼",
         accRoleLabel: "身分角色",
         optOfficer: "樓層幹部",
-        optTeacher: "負責老師",
+        optDormTeacher: "宿舍管理老師",
+        optHomeroomTeacher: "導師 / 班級老師",
+        roleShort_ADMIN: "管理員",
+        roleShort_OFFICER: "樓層幹部",
+        roleShort_DORM_TEACHER: "宿舍管理老師",
+        roleShort_HOMEROOM_TEACHER: "導師 / 班級老師",
+        roleShort_TEACHER: "導師 / 班級老師",
+        roleShort_STUDENT: "住宿生",
         accUserLabel: "登入帳號",
         accNameLabel: "顯示名稱",
         addAccBtn: "新增帳號",
@@ -860,7 +896,8 @@
       { username: "canbo_1f", password: "123456", role: "OFFICER", displayName: "Cán bộ tầng 1F", assignedBuilding: "華苑樓", assignedFloor: "1F" },
       { username: "canbo_2f", password: "123456", role: "OFFICER", displayName: "Cán bộ tầng 2F", assignedBuilding: "華苑樓", assignedFloor: "2F" },
       { username: "canbo_3f", password: "123456", role: "OFFICER", displayName: "Cán bộ tầng 3F", assignedBuilding: "志清樓", assignedFloor: "3F" },
-      { username: "gv01", password: "123456", role: "TEACHER", displayName: "Thầy Lâm / 林老師", assignedClass: "Lớp A" }
+      { username: "qktx01", password: "123456", role: "DORM_TEACHER", displayName: "GV Quản lý KTX / 舍監老師", assignedBuilding: "ALL" },
+      { username: "gvcn01", password: "123456", role: "HOMEROOM_TEACHER", displayName: "GV Chủ nhiệm Lớp A / 班導師", assignedClass: "Lớp A" }
     ];
 
     const buildingsList = ["華苑樓", "志清樓", "橫渠樓"];
@@ -896,6 +933,21 @@
     let repairRequests = JSON.parse(localStorage.getItem("dorm_repair_requests_v1")) || defaultRepairRequests;
 
     let isApplyingRemoteData = false;
+
+    function isHomeroomTeacherRole(role) {
+      return role === "HOMEROOM_TEACHER" || role === "TEACHER";
+    }
+
+    function isDormTeacherRole(role) {
+      return role === "DORM_TEACHER";
+    }
+
+    function getDormBuildingScopeLabel(assignedBuilding) {
+      if (!assignedBuilding || assignedBuilding === "ALL") {
+        return t("allDormBuildingsScope");
+      }
+      return assignedBuilding;
+    }
 
     function setSyncStatus(state, label) {
       const badge = document.getElementById("syncStatusBadge");
@@ -1097,7 +1149,7 @@
 
     function shouldShowRosterList() {
       if (!currentUser) return false;
-      if (currentUser.role === "OFFICER" || currentUser.role === "STUDENT" || currentUser.role === "TEACHER") {
+      if (currentUser.role !== "ADMIN") {
         return true;
       }
       const keyword = document.getElementById("searchInput").value.trim();
@@ -1113,7 +1165,7 @@
       const floorStepBar = document.getElementById("floorStepBar");
       const floorTabsList = document.getElementById("floorTabsList");
 
-      if (!currentUser || currentUser.role === "STUDENT" || currentUser.role === "OFFICER" || currentUser.role === "TEACHER") {
+      if (!currentUser || currentUser.role !== "ADMIN") {
         tabsBar.classList.add("hidden");
         floorStepBar.classList.add("hidden");
         return;
@@ -1251,15 +1303,21 @@
       const role = currentUser.role;
       const isAdmin = role === "ADMIN";
       const isOfficer = role === "OFFICER";
+      const isDormTeacher = isDormTeacherRole(role);
+      const isHomeroomTeacher = isHomeroomTeacherRole(role);
+      const isReadOnlyTeacher = isDormTeacher || isHomeroomTeacher;
       const canMarkAttendance = isAdmin || isOfficer;
       const isStudent = role === "STUDENT";
+      const canCreateRequests = isAdmin || isOfficer || isStudent;
 
       let roleBadgeText = t("roleLabel_" + role);
       if (role === "OFFICER") {
         roleBadgeText = roleBadgeText
           .replace("{building}", currentUser.assignedBuilding || "")
           .replace("{floor}", currentUser.assignedFloor || "");
-      } else if (role === "TEACHER") {
+      } else if (isDormTeacher) {
+        roleBadgeText = roleBadgeText.replace("{buildingScope}", getDormBuildingScopeLabel(currentUser.assignedBuilding));
+      } else if (isHomeroomTeacher) {
         roleBadgeText = roleBadgeText.replace("{class}", currentUser.assignedClass || "");
       }
       document.getElementById("userRoleBadge").textContent = roleBadgeText;
@@ -1270,7 +1328,9 @@
         notice = notice
           .replace("{building}", currentUser.assignedBuilding || "")
           .replace("{floor}", currentUser.assignedFloor || "");
-      } else if (role === "TEACHER") {
+      } else if (isDormTeacher) {
+        notice = notice.replace("{buildingScope}", getDormBuildingScopeLabel(currentUser.assignedBuilding));
+      } else if (isHomeroomTeacher) {
         notice = notice.replace("{class}", currentUser.assignedClass || "");
       }
       document.getElementById("roleNoticeText").textContent = notice;
@@ -1282,6 +1342,10 @@
         filterFloorEl.value = currentUser.assignedFloor;
         filterBuildingEl.disabled = true;
         filterFloorEl.disabled = true;
+      } else if (isDormTeacher && currentUser.assignedBuilding && currentUser.assignedBuilding !== "ALL") {
+        filterBuildingEl.value = currentUser.assignedBuilding;
+        filterBuildingEl.disabled = true;
+        filterFloorEl.disabled = false;
       } else {
         filterBuildingEl.disabled = false;
         filterFloorEl.disabled = false;
@@ -1295,8 +1359,10 @@
       document.getElementById("btnExportCSV").classList.toggle("hidden", isStudent);
       document.getElementById("btnMarkAllPresent").classList.toggle("hidden", !canMarkAttendance);
       document.getElementById("btnExportAttendance").classList.toggle("hidden", isStudent);
-      document.getElementById("filterBar").classList.toggle("hidden", isStudent);
+      document.getElementById("filterBar").classList.toggle("hidden", isStudent || isHomeroomTeacher);
       document.getElementById("colActionHeader").classList.toggle("hidden", !(isAdmin || isOfficer));
+      document.getElementById("btnAddLeave").classList.toggle("hidden", !canCreateRequests);
+      document.getElementById("btnAddRepair").classList.toggle("hidden", !canCreateRequests);
 
       renderTable();
     }
@@ -1368,7 +1434,8 @@
     window.toggleStaffAssignFields = function() {
       const role = document.getElementById("newAccRole").value;
       document.getElementById("officerAssignWrap").classList.toggle("hidden", role !== "OFFICER");
-      document.getElementById("teacherAssignWrap").classList.toggle("hidden", role !== "TEACHER");
+      document.getElementById("dormTeacherAssignWrap").classList.toggle("hidden", role !== "DORM_TEACHER");
+      document.getElementById("teacherAssignWrap").classList.toggle("hidden", role !== "HOMEROOM_TEACHER");
     };
 
     window.addStaffAccount = function(e) {
@@ -1393,7 +1460,9 @@
       if (role === "OFFICER") {
         newAcc.assignedBuilding = document.getElementById("newAccBuilding").value;
         newAcc.assignedFloor = document.getElementById("newAccFloor").value;
-      } else if (role === "TEACHER") {
+      } else if (role === "DORM_TEACHER") {
+        newAcc.assignedBuilding = document.getElementById("newAccDormBuilding").value;
+      } else if (role === "HOMEROOM_TEACHER") {
         newAcc.assignedClass = document.getElementById("newAccClass").value.trim() || "Lớp A";
       }
 
@@ -1430,11 +1499,22 @@
       }
     };
 
+    window.updateDormTeacherBuilding = function(username, value) {
+      const acc = staffAccounts.find(a => a.username === username);
+      if (acc) {
+        acc.assignedBuilding = value;
+        persistAllState(true);
+        renderAccountsTable();
+        renderTable();
+      }
+    };
+
     window.updateTeacherClass = function(username, value) {
       const acc = staffAccounts.find(a => a.username === username);
       if (acc) {
         acc.assignedClass = value;
         persistAllState(true);
+        renderTable();
       }
     };
 
@@ -1460,7 +1540,16 @@
               <select onchange="updateOfficerAssignment('${acc.username}', 'assignedFloor', this.value)" class="border border-slate-300 rounded px-1.5 py-1 text-xs bg-white">${fOptions}</select>
             </div>
           `;
-        } else if (acc.role === "TEACHER") {
+        } else if (isDormTeacherRole(acc.role)) {
+          const currentB = acc.assignedBuilding || "ALL";
+          const dormBOptions = [
+            `<option value="ALL" ${currentB === "ALL" ? "selected" : ""}>${t("allDormBuildingsScope")}</option>`,
+            ...buildingsList.map(b => `<option value="${b}" ${currentB === b ? "selected" : ""}>${b}</option>`)
+          ].join("");
+          scopeHTML = `
+            <select onchange="updateDormTeacherBuilding('${acc.username}', this.value)" class="border border-slate-300 rounded px-2 py-1 text-xs bg-white">${dormBOptions}</select>
+          `;
+        } else if (isHomeroomTeacherRole(acc.role)) {
           scopeHTML = `
             <input type="text" value="${acc.assignedClass || ""}" onchange="updateTeacherClass('${acc.username}', this.value)" class="border border-slate-300 rounded px-2 py-1 text-xs w-28" />
           `;
@@ -1468,6 +1557,7 @@
           scopeHTML = `${acc.assignedBuilding || ""} · ${acc.assignedFloor || ""} · ${acc.assignedClass || ""}`;
         }
 
+        const roleShortText = t("roleShort_" + acc.role);
         const canDel = acc.username.toLowerCase() !== "admin";
         const delBtn = canDel
           ? `<button onclick="deleteAccount('${acc.username}')" class="text-rose-500 hover:text-rose-700 p-1 rounded hover:bg-rose-50" title="${t("deleteTitle")}"><i class="fa-solid fa-trash"></i></button>`
@@ -1477,7 +1567,7 @@
           <tr class="hover:bg-slate-50">
             <td class="py-2.5 px-3 font-mono font-semibold text-indigo-700">${acc.username}</td>
             <td class="py-2.5 px-3 font-medium text-slate-800">${acc.displayName}</td>
-            <td class="py-2.5 px-3">${acc.role}</td>
+            <td class="py-2.5 px-3">${roleShortText}</td>
             <td class="py-2.5 px-3">${scopeHTML}</td>
             <td class="py-2.5 px-3">
               <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-900 font-mono font-semibold">${acc.password}</span>
@@ -1700,7 +1790,13 @@
           r.floor === currentUser.assignedFloor
         );
       }
-      if (currentUser.role === "TEACHER") {
+      if (isDormTeacherRole(currentUser.role)) {
+        if (!currentUser.assignedBuilding || currentUser.assignedBuilding === "ALL") {
+          return list;
+        }
+        return list.filter(r => r.building === currentUser.assignedBuilding);
+      }
+      if (isHomeroomTeacherRole(currentUser.role)) {
         return list.filter(r => (r.className || "").toLowerCase() === (currentUser.assignedClass || "").toLowerCase());
       }
       if (currentUser.role === "STUDENT") {
@@ -1711,7 +1807,9 @@
 
     function getFilteredResidents() {
       const scoped = getScopedResidents();
-      if (currentUser && currentUser.role === "STUDENT") return scoped;
+      if (currentUser && (currentUser.role === "STUDENT" || isHomeroomTeacherRole(currentUser.role))) {
+        return scoped;
+      }
 
       const keyword = document.getElementById("searchInput").value.toLowerCase().trim();
       const buildingFilter = document.getElementById("filterBuilding").value;
