@@ -34,7 +34,7 @@
           <label data-i18n="usernameLabel" class="block text-xs font-semibold text-slate-600 mb-1">Tên đăng nhập / Mã SV</label>
           <div class="relative">
             <i class="fa-solid fa-user absolute left-3 top-3 text-slate-400 text-sm"></i>
-            <input id="loginUsername" type="text" required data-i18n-placeholder="usernamePlaceholder" placeholder="VD: admin, canbo_1f, gvcn01, qktx01, B112001" class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            <input id="loginUsername" type="text" required data-i18n-placeholder="usernamePlaceholder" placeholder="VD: admin, canbo_1f, qktx01, gvcn01, B112001" class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
           </div>
         </div>
 
@@ -133,10 +133,14 @@
       </div>
 
       <!-- Thống kê nhanh điểm danh -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
           <p data-i18n="statTotal" class="text-xs text-slate-500 font-medium">Tổng số sinh viên</p>
           <p id="statTotal" class="text-2xl font-bold text-slate-800 mt-1">0</p>
+        </div>
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+          <p data-i18n="statAttUnmarked" class="text-xs text-slate-500 font-medium">Chưa điểm danh</p>
+          <p id="statAttUnmarked" class="text-2xl font-bold text-slate-600 mt-1">0</p>
         </div>
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
           <p data-i18n="statAttPresent" class="text-xs text-emerald-600 font-medium">Có mặt ngày chọn</p>
@@ -146,23 +150,23 @@
           <p data-i18n="statAttAbsent" class="text-xs text-rose-600 font-medium">Vắng mặt ngày chọn</p>
           <p id="statAttAbsent" class="text-2xl font-bold text-rose-600 mt-1">0</p>
         </div>
-        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-          <p data-i18n="statAttLate" class="text-xs text-orange-600 font-medium">Về muộn ngày chọn</p>
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 col-span-2 sm:col-span-1">
+          <p data-i18n="statAttLate" class="text-xs text-orange-600 font-medium">Về muộn (đã khóa)</p>
           <p id="statAttLate" class="text-2xl font-bold text-orange-600 mt-1">0</p>
         </div>
       </div>
 
-      <!-- Thanh điều khiển Điểm danh hàng ngày & Khung giờ 22:30 - 00:00 -->
+      <!-- Thanh điều khiển Điểm danh hàng ngày (Làm mới lúc 20:00 tối) & Khung giờ 22:30 - 00:00 -->
       <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 pb-3 border-b border-slate-100">
           <div class="flex flex-wrap items-center gap-2">
             <span class="text-xs font-bold uppercase tracking-wide text-indigo-700 bg-indigo-50 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5">
               <i class="fa-solid fa-calendar-check"></i>
-              <span data-i18n="attDateLabel">Ngày điểm danh:</span>
+              <span data-i18n="attDateLabel">Phiên điểm danh tối (20:00 làm mới):</span>
             </span>
             <input type="date" id="attendanceDate" onchange="renderTable()" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500" />
             <button type="button" onclick="setToday()" class="text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg transition" data-i18n="todayBtn">
-              Hôm nay
+              Phiên hiện tại
             </button>
             <span id="attendanceRateBadge" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-700">0%</span>
             <span id="attendanceWindowBadge" class="text-xs font-semibold px-2.5 py-1 rounded-full"></span>
@@ -175,7 +179,7 @@
             </button>
             <button id="btnMarkAllPresent" type="button" onclick="markAllFiltered('PRESENT')" class="text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-lg transition flex items-center gap-1">
               <i class="fa-solid fa-check-double"></i>
-              <span data-i18n="markAllPresent">Có mặt tất cả (đang lọc)</span>
+              <span data-i18n="markAllPresent">Có mặt tất cả (chưa điểm danh)</span>
             </button>
             <button id="btnExportAttendance" type="button" onclick="exportAttendanceCSV()" class="text-xs font-semibold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 px-3 py-1.5 rounded-lg transition flex items-center gap-1">
               <i class="fa-solid fa-file-csv"></i>
@@ -200,14 +204,15 @@
           </select>
           <select id="filterAttendance" onchange="renderTable()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
             <option value="ALL" data-i18n="allAttendance">Tất cả điểm danh</option>
+            <option value="UNMARKED" data-i18n="attUnmarked">Chưa điểm danh</option>
             <option value="PRESENT" data-i18n="attPresent">Có mặt</option>
             <option value="ABSENT" data-i18n="attAbsent">Vắng mặt</option>
-            <option value="LATE" data-i18n="attLate">Về muộn</option>
+            <option value="LATE" data-i18n="attLateLocked">Về muộn (Đã khóa)</option>
           </select>
         </div>
       </div>
 
-      <!-- ================= BẢNG ĐIỂM DANH HÀNG NGÀY (CHỌN TÒA -> CHỌN TẦNG -> HIỆN DANH SÁCH) ================= -->
+      <!-- ================= BẢNG ĐIỂM DANH HÀNG NGÀY ================= -->
       <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <!-- Bước 1: Chọn Tòa -->
         <div id="buildingTabsBar" class="px-4 py-3 bg-slate-50/80 border-b border-slate-200 flex flex-wrap items-center gap-2">
@@ -218,7 +223,7 @@
           <div id="buildingTabsList" class="flex flex-wrap items-center gap-2"></div>
         </div>
 
-        <!-- Bước 2: Chọn Tầng (sau khi đã chọn tòa) -->
+        <!-- Bước 2: Chọn Tầng -->
         <div id="floorStepBar" class="hidden px-4 py-3 bg-indigo-50/50 border-b border-slate-200 flex flex-wrap items-center gap-2">
           <span class="text-xs font-semibold text-indigo-800 mr-1 flex items-center gap-1.5">
             <i class="fa-solid fa-layer-group text-indigo-600"></i>
@@ -227,7 +232,7 @@
           <div id="floorTabsList" class="flex flex-wrap items-center gap-2"></div>
         </div>
 
-        <!-- Hướng dẫn chọn Tòa / Tầng trước khi hiện danh sách -->
+        <!-- Hướng dẫn chọn Tòa / Tầng -->
         <div id="selectGuideState" class="hidden py-12 px-4 text-center text-slate-500 space-y-1.5">
           <i class="fa-solid fa-arrow-up-from-bracket text-2xl text-indigo-400"></i>
           <p id="selectGuideText" class="text-sm font-medium">Vui lòng chọn tòa nhà và chọn tầng để hiển thị danh sách điểm danh.</p>
@@ -254,6 +259,62 @@
         </div>
       </div>
 
+      <!-- ================= MỤC RIÊNG: ĐĂNG KÝ VỀ MUỘN & LỊCH SỬ RA VÀO (晚歸登記與進出紀錄) ================= -->
+      <section class="bg-white rounded-xl shadow-sm border border-orange-200 overflow-hidden">
+        <div class="px-4 py-3.5 bg-orange-50/80 border-b border-orange-200 flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <span class="w-8 h-8 rounded-lg bg-orange-500 text-white flex items-center justify-center text-sm">
+              <i class="fa-solid fa-clock-rotate-left"></i>
+            </span>
+            <div>
+              <h2 data-i18n="lateSectionTitle" class="text-base font-bold text-orange-950">Mục Đăng Ký Về Muộn & Lịch Sử Ra Vào (晚歸登記與進出紀錄)</h2>
+              <p data-i18n="lateSectionSubtitle" class="text-xs text-orange-800/80">SV đăng ký về muộn từ 12:00 – trước 22:00 (tự động khóa sang Về muộn). Khi SV về KTX, giáo viên trực nhập đúng Mã SV để chuyển sang Có mặt.</p>
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <span id="lateRegWindowBadge" class="text-xs font-semibold px-2.5 py-1 rounded-full"></span>
+            <button id="btnRegisterLate" type="button" onclick="openLateRegisterModal()" class="bg-orange-600 hover:bg-orange-700 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow transition flex items-center gap-1.5">
+              <i class="fa-solid fa-user-clock"></i>
+              <span data-i18n="registerLateBtn">Đăng ký về muộn</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Thanh xác nhận nhanh cho giáo viên trực khi sinh viên trở về -->
+        <div id="dutyCheckInBar" class="hidden px-4 py-3 bg-emerald-50/70 border-b border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-2 text-xs text-emerald-900 font-medium">
+            <i class="fa-solid fa-id-card-clip text-emerald-600 text-base"></i>
+            <span data-i18n="dutyCheckInHint">Giáo viên trực xác nhận SV trở về KTX (khớp chính xác Mã SV → mở khóa & chuyển Về muộn thành Có mặt):</span>
+          </div>
+          <form onsubmit="handleDutyStudentReturn(event)" class="flex items-center gap-2">
+            <input id="dutyReturnStudentIdInput" type="text" required data-i18n-placeholder="dutyStudentIdPlaceholder" placeholder="Nhập chính xác Mã SV..." class="border border-emerald-300 bg-white rounded-lg px-3 py-1.5 text-xs font-mono font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 w-48" />
+            <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3.5 py-1.5 rounded-lg shadow transition flex items-center gap-1.5">
+              <i class="fa-solid fa-check"></i>
+              <span data-i18n="confirmReturnBtn">Xác nhận đã về</span>
+            </button>
+          </form>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase text-slate-500 font-semibold">
+                <th data-i18n="colRoom" class="py-3 px-4">Tòa / Tầng / Phòng</th>
+                <th data-i18n="colStudent" class="py-3 px-4">Họ Tên & Mã SV</th>
+                <th data-i18n="colLateTimeInfo" class="py-3 px-4">Giờ Đăng Ký / Dự Kiến Về</th>
+                <th data-i18n="colLateReason" class="py-3 px-4">Lý Do Về Muộn</th>
+                <th data-i18n="colReturnStatus" class="py-3 px-4">Trạng Thái & Giờ Về Thực Tế</th>
+                <th id="colLateActionHeader" data-i18n="colAction" class="py-3 px-4 text-right">Thao Tác</th>
+              </tr>
+            </thead>
+            <tbody id="entryExitTableBody" class="divide-y divide-slate-100 text-sm"></tbody>
+          </table>
+        </div>
+        <div id="entryExitEmptyState" class="hidden py-8 text-center text-slate-400 text-xs" data-i18n="entryExitEmptyText">
+          Chưa có lịch sử đăng ký về muộn / ra vào nào trong phạm vi xem.
+        </div>
+      </section>
+
       <!-- ================= MỤC RIÊNG CHO ADMIN: QUẢN LÝ CÁN BỘ & TRẠNG THÁI ĐIỂM DANH ================= -->
       <section id="officerManagementSection" class="hidden bg-white rounded-xl shadow-sm border border-indigo-200 overflow-hidden">
         <div class="px-4 py-3.5 bg-indigo-50/80 border-b border-indigo-200 flex flex-wrap items-center justify-between gap-2">
@@ -263,7 +324,7 @@
             </span>
             <div>
               <h2 data-i18n="officerSectionTitle" class="text-base font-bold text-indigo-950">Mục Quản Lý Cán Bộ & Trạng Thái Điểm Danh (幹部管理)</h2>
-              <p data-i18n="officerSectionSubtitle" class="text-xs text-indigo-800/80">Theo dõi trực tiếp tầng phụ trách và kết quả điểm danh của từng cán bộ trong ngày đang chọn</p>
+              <p data-i18n="officerSectionSubtitle" class="text-xs text-indigo-800/80">Theo dõi trực tiếp tầng phụ trách và kết quả điểm danh của từng cán bộ trong phiên đang chọn</p>
             </div>
           </div>
           <span id="officerCountBadge" class="text-xs font-bold px-2.5 py-1 rounded-full bg-indigo-200/80 text-indigo-950">0</span>
@@ -364,6 +425,39 @@
         </div>
       </section>
     </main>
+  </div>
+
+  <!-- Modal Đăng Ký Về Muộn (12:00 trưa - trước 22:00 tối) -->
+  <div id="lateRegisterModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
+      <div class="flex justify-between items-center border-b pb-3">
+        <div>
+          <h2 data-i18n="lateModalTitle" class="text-lg font-bold text-slate-800">Đăng Ký Về Muộn (晚歸登記)</h2>
+          <p data-i18n="lateModalDesc" class="text-xs text-orange-700 mt-0.5">Mở đăng ký từ 12:00 trưa đến trước 22:00 tối. Sau khi gửi, điểm danh tự động khóa ở trạng thái Về muộn.</p>
+        </div>
+        <button onclick="closeLateRegisterModal()" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      <form onsubmit="submitLateRegister(event)" class="space-y-3">
+        <div>
+          <label data-i18n="lblSelectStudent" class="block text-xs font-semibold text-slate-600 mb-1">Sinh viên</label>
+          <select id="lateResidentId" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"></select>
+        </div>
+        <div>
+          <label data-i18n="lblExpectedReturnTime" class="block text-xs font-semibold text-slate-600 mb-1">Giờ dự kiến về KTX</label>
+          <input id="lateExpectedTime" type="time" required value="23:00" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label data-i18n="lblLateReason" class="block text-xs font-semibold text-slate-600 mb-1">Lý do về muộn</label>
+          <textarea id="lateReasonInput" rows="3" required data-i18n-placeholder="lateReasonPlaceholder" placeholder="VD: Làm thêm ca tối / Học nhóm tại thư viện..." class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"></textarea>
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeLateRegisterModal()" data-i18n="cancelBtn" class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg">Hủy</button>
+          <button type="submit" data-i18n="confirmLateRegBtn" class="px-4 py-2 text-sm bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-lg shadow">Xác nhận đăng ký về muộn</button>
+        </div>
+      </form>
+    </div>
   </div>
 
   <!-- Modal Thêm / Sửa Sinh Viên (Admin) -->
@@ -595,12 +689,12 @@
         roleLabel_HOMEROOM_TEACHER: "GV chủ nhiệm ({class})",
         roleLabel_TEACHER: "GV chủ nhiệm ({class})",
         roleLabel_STUDENT: "Sinh viên nội trú",
-        notice_ADMIN: "Quyền Admin: Chọn Tòa → Chọn Tầng để mở danh sách điểm danh. Khung giờ điểm danh 22:30–00:00 (hỗ trợ tầng 1F–9F+).",
-        notice_OFFICER: "Quyền Cán bộ tầng ({building} · {floor}): Chỉ xem và điểm danh sinh viên {building} - tầng {floor} trong khung 22:30–00:00.",
-        notice_DORM_TEACHER: "Quyền GV quản lý KTX ({buildingScope}): Theo dõi sinh viên, điểm danh, nghỉ phép ngoài và báo sửa chữa thuộc phạm vi KTX được giao (chỉ xem).",
+        notice_ADMIN: "Quyền Admin: Điểm danh làm mới lúc 20:00 tối (mặc định để trống). Đăng ký về muộn mở từ 12:00 – trước 22:00 và tự khóa ở Về muộn cho tới khi giáo viên trực nhập đúng Mã SV xác nhận.",
+        notice_OFFICER: "Quyền Cán bộ tầng ({building} · {floor}): Điểm danh trong khung 22:30–00:00 (20:00 làm mới danh sách). Các SV đã đăng ký về muộn sẽ bị khóa tự động.",
+        notice_DORM_TEACHER: "Quyền GV quản lý KTX ({buildingScope}): Theo dõi KTX và nhập chính xác Mã SV tại mục Lịch Sử Ra Vào khi sinh viên về muộn trở về KTX để chuyển sang Có mặt.",
         notice_HOMEROOM_TEACHER: "Quyền GV chủ nhiệm ({class}): Chỉ hiển thị sinh viên thuộc {class} (chế độ chỉ xem).",
         notice_TEACHER: "Quyền GV chủ nhiệm ({class}): Chỉ hiển thị sinh viên thuộc {class} (chế độ chỉ xem).",
-        notice_STUDENT: "Quyền Sinh viên: Đăng nhập bằng Mã SV (mật khẩu đầu 123456). Có thể đổi mật khẩu và gửi đơn Nghỉ phép ngoài hoặc Báo sửa chữa.",
+        notice_STUDENT: "Quyền Sinh viên: Có thể đăng ký về muộn từ 12:00 trưa đến trước 22:00 tối (tự động khóa điểm danh ở Về muộn) hoặc gửi đơn Nghỉ phép ngoài / Báo sửa chữa.",
         welcomePrefix: "Xin chào,",
         logoutBtn: "Đăng xuất",
         appTitle: "Quản Lý Ký Túc Xá",
@@ -612,17 +706,18 @@
         exportBtn: "Xuất CSV",
         addBtn: "Thêm Sinh Viên",
         statTotal: "Tổng số sinh viên",
+        statAttUnmarked: "Chưa điểm danh",
         statAttPresent: "Có mặt ngày chọn",
         statAttAbsent: "Vắng mặt ngày chọn",
-        statAttLate: "Về muộn ngày chọn",
-        attDateLabel: "Ngày điểm danh:",
-        todayBtn: "Hôm nay",
+        statAttLate: "Về muộn (đã khóa)",
+        attDateLabel: "Phiên điểm danh tối (20:00 làm mới):",
+        todayBtn: "Phiên hiện tại",
         attWindowOpen: "Đang mở điểm danh (22:30 - 00:00)",
         attWindowClosed: "Đã khóa điểm danh (Chỉ mở 22:30 - 00:00)",
         attWindowOverride: "Đang mở tạm thời bởi Admin",
         overrideOpenBtn: "Mở tạm ngoài giờ",
         overrideCloseBtn: "Khóa theo giờ chuẩn",
-        markAllPresent: "Có mặt tất cả (đang lọc)",
+        markAllPresent: "Có mặt tất cả (chưa điểm danh)",
         exportAttBtn: "Xuất điểm danh ngày",
         searchPlaceholder: "Tìm theo tên, mã SV, số phòng, lớp...",
         allBuildings: "Tất cả tòa nhà",
@@ -634,15 +729,42 @@
         selectGuideMsg: "Hãy chọn một Tòa nhà ở bước 1, sau đó chọn Tầng ở bước 2 để hiển thị danh sách điểm danh.",
         selectFloorGuideMsg: "Đã chọn {building}. Hãy chọn Tầng để hiển thị danh sách điểm danh.",
         allAttendance: "Tất cả điểm danh",
+        attUnmarked: "Chưa điểm danh",
         attPresent: "Có mặt",
         attAbsent: "Vắng mặt",
         attLate: "Về muộn",
+        attLateLocked: "Về muộn (Đã khóa)",
         colRoom: "Tòa / Tầng / Phòng",
         colStudent: "Họ Tên & Lớp",
         colAttendance: "Điểm Danh Ngày",
         colNote: "Ghi Chú Điểm Danh",
         colAction: "Thao Tác",
         emptyText: "Chưa có dữ liệu phù hợp.",
+        lateSectionTitle: "Mục Đăng Ký Về Muộn & Lịch Sử Ra Vào (晚歸登記與進出紀錄)",
+        lateSectionSubtitle: "SV đăng ký về muộn từ 12:00 – trước 22:00 (tự động khóa sang Về muộn). Khi SV về KTX, giáo viên trực nhập đúng Mã SV để chuyển sang Có mặt.",
+        lateWindowOpen: "Đang mở đăng ký về muộn (12:00 - 22:00)",
+        lateWindowClosed: "Ngoài giờ đăng ký về muộn (12:00 - 22:00)",
+        registerLateBtn: "Đăng ký về muộn",
+        dutyCheckInHint: "Giáo viên trực xác nhận SV trở về KTX (khớp chính xác Mã SV → mở khóa & chuyển Về muộn thành Có mặt):",
+        dutyStudentIdPlaceholder: "Nhập chính xác Mã SV...",
+        confirmReturnBtn: "Xác nhận đã về",
+        colLateTimeInfo: "Giờ Đăng Ký / Dự Kiến Về",
+        colLateReason: "Lý Do Về Muộn",
+        colReturnStatus: "Trạng Thái & Giờ Về Thực Tế",
+        entryExitEmptyText: "Chưa có lịch sử đăng ký về muộn / ra vào nào trong phạm vi xem.",
+        statusPendingReturn: "Chưa về KTX (Đang khóa Về muộn)",
+        statusReturnedAt: "Đã về lúc {time} (Đã chuyển Có mặt)",
+        confirmReturnInlineBtn: "Xác nhận về",
+        lateModalTitle: "Đăng Ký Về Muộn (晚歸登記)",
+        lateModalDesc: "Mở đăng ký từ 12:00 trưa đến trước 22:00 tối. Sau khi gửi, điểm danh tự động khóa ở trạng thái Về muộn.",
+        lblExpectedReturnTime: "Giờ dự kiến về KTX",
+        lblLateReason: "Lý do về muộn",
+        lateReasonPlaceholder: "VD: Làm thêm ca tối / Học nhóm tại thư viện...",
+        confirmLateRegBtn: "Xác nhận đăng ký về muộn",
+        lateRegSuccess: "Đã đăng ký về muộn cho {name} ({sid})! Trạng thái điểm danh đã tự động chuyển sang Về muộn và khóa lại.",
+        lateRegClosedAlert: "Chỉ cho phép đăng ký về muộn trong khung giờ từ 12:00 trưa đến trước 22:00 tối!",
+        returnSuccessAlert: "Đã xác nhận sinh viên {name} — Mã SV nhập: {sid} trở về KTX! Trạng thái điểm danh đã chuyển sang Có mặt.",
+        returnNotFoundAlert: "Không tìm thấy sinh viên có Mã SV chính xác là \"{sid}\" trong phạm vi quản lý của bạn!",
         officerSectionTitle: "Mục Quản Lý Cán Bộ & Trạng Thái Điểm Danh (幹部管理)",
         officerSectionSubtitle: "Theo dõi trực tiếp tầng phụ trách và kết quả điểm danh của từng cán bộ",
         colOfficerName: "Cán Bộ / Tài Khoản",
@@ -677,7 +799,7 @@
         roomPlaceholder: "VD: 101-1",
         namePlaceholder: "VD: 趙德原",
         idPlaceholder: "VD: B1120101",
-        notePlaceholder: "VD: Về muộn 15 phút do xe buýt...",
+        notePlaceholder: "VD: Ghi chú điểm danh / về muộn...",
         cancelBtn: "Hủy",
         saveBtn: "Lưu Thông Tin",
         lblSelectStudent: "Sinh viên",
@@ -729,7 +851,7 @@
         confirmDelete: "Bạn có chắc muốn xóa hồ sơ này không?",
         csvHeaders: ["Toa nha", "Tang", "So phong", "Ho ten", "Ma SV", "Lop", "Ghi chu"],
         csvFileName: "Danh_Sach_KTX.csv",
-        attCsvHeaders: ["Ngay diem danh", "Toa nha", "Tang", "So phong", "Ho ten", "Ma SV", "Lop", "Diem danh", "Ghi chu"],
+        attCsvHeaders: ["Phien diem danh", "Toa nha", "Tang", "So phong", "Ho ten", "Ma SV", "Lop", "Diem danh", "Ghi chu"],
         attCsvFileName: "Diem_Danh_KTX_{date}.csv",
         templateFileName: "Mau_Nhap_KTX.csv",
         importSuccess: "Đã thêm thành công {count} sinh viên từ file.",
@@ -749,12 +871,12 @@
         roleLabel_HOMEROOM_TEACHER: "導師 / 班級老師 ({class})",
         roleLabel_TEACHER: "導師 / 班級老師 ({class})",
         roleLabel_STUDENT: "住宿生",
-        notice_ADMIN: "管理員權限：先選棟別 → 再選樓層後顯示點名名單。點名時段 22:30–00:00（支援 1F–9F+）。",
-        notice_OFFICER: "樓層幹部權限（{building} · {floor}）：僅於 22:30–00:00 可對 {building} {floor} 進行點名。",
-        notice_DORM_TEACHER: "宿舍管理老師權限（{buildingScope}）：可檢視所轄宿舍棟別的住宿生、點名、請假與報修紀錄（唯讀）。",
+        notice_ADMIN: "管理員權限：每晚 20:00 重置點名（預設空白未勾選）。12:00–22:00 開放晚歸登記並自動鎖定為晚歸，待值班老師輸入正確學號確認返宿後轉為出席。",
+        notice_OFFICER: "樓層幹部權限（{building} · {floor}）：每晚 20:00 重置名單，22:30–00:00 進行點名（已登記晚歸者自動鎖定）。",
+        notice_DORM_TEACHER: "宿舍管理老師權限（{buildingScope}）：可檢視宿舍狀態，並於晚歸生返宿時輸入正確學號確認，自動解鎖並轉為出席。",
         notice_HOMEROOM_TEACHER: "導師 / 班級老師權限（{class}）：僅顯示 {class} 住宿生資料（唯讀）。",
         notice_TEACHER: "導師 / 班級老師權限（{class}）：僅顯示 {class} 住宿生資料（唯讀）。",
-        notice_STUDENT: "住宿生權限：以學號登入（初始密碼 123456），可修改密碼並於下方獨立區塊提交請假或報修。",
+        notice_STUDENT: "住宿生權限：可於 12:00 至 22:00 前登記晚歸（送出後自動鎖定點名為晚歸），或提交請假與報修。",
         welcomePrefix: "您好，",
         logoutBtn: "登出",
         appTitle: "宿舍管理系統",
@@ -766,17 +888,18 @@
         exportBtn: "匯出 CSV",
         addBtn: "新增住宿生",
         statTotal: "住宿生總數",
+        statAttUnmarked: "尚未點名",
         statAttPresent: "當日出席",
         statAttAbsent: "當日缺席",
-        statAttLate: "當日晚歸",
-        attDateLabel: "點名日期：",
-        todayBtn: "今天",
+        statAttLate: "晚歸（已鎖定）",
+        attDateLabel: "晚間點名場次（20:00 重置）：",
+        todayBtn: "目前場次",
         attWindowOpen: "點名開放中（22:30 - 00:00）",
         attWindowClosed: "已逾時鎖定（僅 22:30 - 00:00 開放）",
         attWindowOverride: "管理員已臨時開啟點名",
         overrideOpenBtn: "臨時開啟點名",
         overrideCloseBtn: "恢復 22:30-00:00 鎖定",
-        markAllPresent: "篩選名單全體出席",
+        markAllPresent: "未點名名單全體出席",
         exportAttBtn: "匯出當日點名",
         searchPlaceholder: "搜尋姓名、學號、房號、班級...",
         allBuildings: "全部棟別",
@@ -788,15 +911,42 @@
         selectGuideMsg: "請先在步驟 1 選擇棟別，再於步驟 2 選擇樓層以顯示點名名單。",
         selectFloorGuideMsg: "已選擇 {building}，請選擇樓層以顯示點名名單。",
         allAttendance: "全部點名狀態",
+        attUnmarked: "尚未點名",
         attPresent: "出席",
         attAbsent: "缺席",
         attLate: "晚歸",
+        attLateLocked: "晚歸（已鎖定）",
         colRoom: "棟別 / 樓層 / 房號",
         colStudent: "姓名與班級",
         colAttendance: "當日點名",
         colNote: "點名備註",
         colAction: "操作",
         emptyText: "尚無符合的資料。",
+        lateSectionTitle: "晚歸登記與進出紀錄專區",
+        lateSectionSubtitle: "12:00 至 22:00 前開放學生登記晚歸（送出後自動鎖定點名為晚歸）。學生返宿時由值班老師輸入正確學號確認轉為出席。",
+        lateWindowOpen: "晚歸登記開放中（12:00 - 22:00）",
+        lateWindowClosed: "非晚歸登記時段（12:00 - 22:00）",
+        registerLateBtn: "登記晚歸",
+        dutyCheckInHint: "值班老師確認學生返宿（精準比對學號 → 自動解鎖並將晚歸轉為出席）：",
+        dutyStudentIdPlaceholder: "輸入正確學號...",
+        confirmReturnBtn: "確認已返宿",
+        colLateTimeInfo: "登記時間 / 預計返宿",
+        colLateReason: "晚歸事由",
+        colReturnStatus: "返宿狀態與實際時間",
+        entryExitEmptyText: "目前檢視範圍內尚無晚歸登記或進出紀錄。",
+        statusPendingReturn: "尚未返宿（點名已鎖定晚歸）",
+        statusReturnedAt: "已於 {time} 返宿（已轉為出席）",
+        confirmReturnInlineBtn: "確認返宿",
+        lateModalTitle: "學生晚歸登記",
+        lateModalDesc: "每日 12:00 至 22:00 前開放登記。送出後該場次點名將自動鎖定為「晚歸」。",
+        lblExpectedReturnTime: "預計返回宿舍時間",
+        lblLateReason: "晚歸事由",
+        lateReasonPlaceholder: "例：晚班打工 / 圖書館自習...",
+        confirmLateRegBtn: "送出晚歸登記",
+        lateRegSuccess: "已完成 {name}（{sid}）晚歸登記！點名狀態已自動鎖定為「晚歸」。",
+        lateRegClosedAlert: "僅限每日 12:00 至 22:00 前登記晚歸！",
+        returnSuccessAlert: "已確認學生 {name}（輸入學號：{sid}）返回宿舍！點名狀態已自動轉為「出席」。",
+        returnNotFoundAlert: "在您的管轄範圍內找不到精準符合學號「{sid}」的住宿生！",
         officerSectionTitle: "幹部管理與即時點名狀態專區",
         officerSectionSubtitle: "即時檢視各樓層幹部管轄範圍與當日點名統計",
         colOfficerName: "幹部 / 帳號",
@@ -883,7 +1033,7 @@
         confirmDelete: "確定要刪除此筆住宿資料嗎？",
         csvHeaders: ["棟別", "樓層", "房號", "姓名", "學號", "班級", "備註"],
         csvFileName: "宿舍住宿名單.csv",
-        attCsvHeaders: ["點名日期", "棟別", "樓層", "房號", "姓名", "學號", "班級", "點名狀態", "備註"],
+        attCsvHeaders: ["點名場次", "棟別", "樓層", "房號", "姓名", "學號", "班級", "點名狀態", "備註"],
         attCsvFileName: "宿舍點名紀錄_{date}.csv",
         templateFileName: "宿舍匯入範例.csv",
         importSuccess: "已成功匯入 {count} 筆住宿生資料。",
@@ -913,7 +1063,7 @@
 
     const defaultData = [
       { id: 1, building: "華苑樓", floor: "1F", room: "101-1", name: "趙德原", studentId: "B112001", className: "Lớp A", note: "Hồ sơ đầy đủ" },
-      { id: 2, building: "華苑樓", floor: "2F", room: "205-2", name: "阮文歡", studentId: "B112002", className: "Lớp A", note: "Cần nhắc nhở giờ giấc" },
+      { id: 2, building: "華苑樓", floor: "2F", room: "205-2", name: "阮文歡", studentId: "B112002", className: "Lớp A", note: "" },
       { id: 3, building: "志清樓", floor: "3F", room: "304-1", name: "陳小武", studentId: "B112003", className: "Lớp B", note: "" }
     ];
 
@@ -928,11 +1078,13 @@
     let residents = JSON.parse(localStorage.getItem("dorm_residents_v5")) || defaultData;
     let staffAccounts = JSON.parse(localStorage.getItem("dorm_staff_accounts_v1")) || defaultStaffAccounts;
     let studentPasswords = JSON.parse(localStorage.getItem("dorm_student_passwords_v1")) || {};
-    let attendanceRecords = JSON.parse(localStorage.getItem("dorm_attendance_v3")) || {};
+    let attendanceRecords = JSON.parse(localStorage.getItem("dorm_attendance_v4")) || {};
+    let entryExitLogs = JSON.parse(localStorage.getItem("dorm_entry_exit_v1")) || [];
     let leaveRequests = JSON.parse(localStorage.getItem("dorm_leave_requests_v1")) || defaultLeaveRequests;
     let repairRequests = JSON.parse(localStorage.getItem("dorm_repair_requests_v1")) || defaultRepairRequests;
 
     let isApplyingRemoteData = false;
+    let lastTrackedSessionDate = null;
 
     function isHomeroomTeacherRole(role) {
       return role === "HOMEROOM_TEACHER" || role === "TEACHER";
@@ -940,6 +1092,11 @@
 
     function isDormTeacherRole(role) {
       return role === "DORM_TEACHER";
+    }
+
+    function canConfirmStudentReturn() {
+      if (!currentUser) return false;
+      return currentUser.role === "ADMIN" || isDormTeacherRole(currentUser.role) || currentUser.role === "OFFICER";
     }
 
     function getDormBuildingScopeLabel(assignedBuilding) {
@@ -971,6 +1128,7 @@
         staffAccounts,
         studentPasswords,
         attendanceRecords,
+        entryExitLogs,
         leaveRequests,
         repairRequests,
         updatedAt: Date.now()
@@ -985,7 +1143,8 @@
       localStorage.setItem("dorm_residents_v5", JSON.stringify(residents));
       localStorage.setItem("dorm_staff_accounts_v1", JSON.stringify(staffAccounts));
       localStorage.setItem("dorm_student_passwords_v1", JSON.stringify(studentPasswords));
-      localStorage.setItem("dorm_attendance_v3", JSON.stringify(attendanceRecords));
+      localStorage.setItem("dorm_attendance_v4", JSON.stringify(attendanceRecords));
+      localStorage.setItem("dorm_entry_exit_v1", JSON.stringify(entryExitLogs));
       localStorage.setItem("dorm_leave_requests_v1", JSON.stringify(leaveRequests));
       localStorage.setItem("dorm_repair_requests_v1", JSON.stringify(repairRequests));
       if (pushToCloud) {
@@ -995,6 +1154,47 @@
 
     function t(key) {
       return translations[currentLang][key] || translations.vi[key] || key;
+    }
+
+    function getActiveAttendanceSessionDate() {
+      const now = new Date();
+      const shifted = new Date(now.getTime() - 20 * 60 * 60 * 1000);
+      const offset = shifted.getTimezoneOffset();
+      const localDate = new Date(shifted.getTime() - offset * 60 * 1000);
+      return localDate.toISOString().split("T")[0];
+    }
+
+    function formatNowTime() {
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2, "0");
+      const mm = String(now.getMinutes()).padStart(2, "0");
+      const dd = String(now.getDate()).padStart(2, "0");
+      const mo = String(now.getMonth() + 1).padStart(2, "0");
+      return `${hh}:${mm} (${dd}/${mo})`;
+    }
+
+    function isWithinLateRegisterWindow() {
+      const now = new Date();
+      const minutes = now.getHours() * 60 + now.getMinutes();
+      return minutes >= 12 * 60 && minutes < 22 * 60;
+    }
+
+    function canRegisterLateNow() {
+      if (!currentUser) return false;
+      if (currentUser.role === "ADMIN" && adminOverrideAttendanceOpen) return true;
+      return isWithinLateRegisterWindow();
+    }
+
+    function isWithinAttendanceWindow() {
+      const now = new Date();
+      const minutes = now.getHours() * 60 + now.getMinutes();
+      return minutes >= 22 * 60 + 30;
+    }
+
+    function canActAttendanceNow() {
+      if (!currentUser) return false;
+      if (currentUser.role === "ADMIN" && adminOverrideAttendanceOpen) return true;
+      return isWithinAttendanceWindow();
     }
 
     function getAllFloorsList() {
@@ -1034,18 +1234,6 @@
       }
     }
 
-    function isWithinAttendanceWindow() {
-      const now = new Date();
-      const minutes = now.getHours() * 60 + now.getMinutes();
-      return minutes >= 22 * 60 + 30;
-    }
-
-    function canActAttendanceNow() {
-      if (!currentUser) return false;
-      if (currentUser.role === "ADMIN" && adminOverrideAttendanceOpen) return true;
-      return isWithinAttendanceWindow();
-    }
-
     window.toggleAdminOverrideWindow = function() {
       if (!currentUser || currentUser.role !== "ADMIN") return;
       adminOverrideAttendanceOpen = !adminOverrideAttendanceOpen;
@@ -1082,11 +1270,27 @@
       markAllBtn.disabled = !effectiveOpen;
       markAllBtn.classList.toggle("opacity-50", !effectiveOpen);
       markAllBtn.classList.toggle("cursor-not-allowed", !effectiveOpen);
+
+      const lateBadge = document.getElementById("lateRegWindowBadge");
+      const lateBtn = document.getElementById("btnRegisterLate");
+      const lateOpen = canRegisterLateNow();
+      if (lateOpen) {
+        lateBadge.textContent = t("lateWindowOpen");
+        lateBadge.className = "text-xs font-semibold px-2.5 py-1 rounded-full bg-orange-100 text-orange-800";
+      } else {
+        lateBadge.textContent = t("lateWindowClosed");
+        lateBadge.className = "text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-200 text-slate-600";
+      }
+      if (lateBtn) {
+        lateBtn.disabled = !lateOpen;
+        lateBtn.classList.toggle("opacity-50", !lateOpen);
+        lateBtn.classList.toggle("cursor-not-allowed", !lateOpen);
+      }
     }
 
     function getAllAccountsList() {
       const list = (staffAccounts || []).map(acc => ({ ...acc }));
-      const seenUsernames = new Set(list.map(a => a.username.toLowerCase()));
+      const seenUsernames = new Set(list.map(a => a.username.trim().toLowerCase()));
 
       (residents || []).forEach(r => {
         const sid = (r.studentId || "").trim();
@@ -1111,7 +1315,8 @@
     function getAttendanceLabel(code) {
       if (code === "PRESENT") return t("attPresent");
       if (code === "ABSENT") return t("attAbsent");
-      return t("attLate");
+      if (code === "LATE") return t("attLateLocked");
+      return t("attUnmarked");
     }
 
     window.onBuildingSelectChange = function(buildingValue) {
@@ -1256,7 +1461,7 @@
       const username = document.getElementById("loginUsername").value.trim();
       const password = document.getElementById("loginPassword").value.trim();
       const allAccs = getAllAccountsList();
-      const found = allAccs.find(u => u.username.toLowerCase() === username.toLowerCase() && u.password === password);
+      const found = allAccs.find(u => u.username.trim().toLowerCase() === username.toLowerCase() && u.password === password);
       const errEl = document.getElementById("loginError");
 
       if (!found) {
@@ -1293,7 +1498,7 @@
         return;
       }
 
-      const latestAcc = getAllAccountsList().find(a => a.username.toLowerCase() === currentUser.username.toLowerCase());
+      const latestAcc = getAllAccountsList().find(a => a.username.trim().toLowerCase() === currentUser.username.trim().toLowerCase());
       if (latestAcc) currentUser = latestAcc;
 
       refreshFloorDropdowns();
@@ -1305,7 +1510,6 @@
       const isOfficer = role === "OFFICER";
       const isDormTeacher = isDormTeacherRole(role);
       const isHomeroomTeacher = isHomeroomTeacherRole(role);
-      const isReadOnlyTeacher = isDormTeacher || isHomeroomTeacher;
       const canMarkAttendance = isAdmin || isOfficer;
       const isStudent = role === "STUDENT";
       const canCreateRequests = isAdmin || isOfficer || isStudent;
@@ -1363,6 +1567,8 @@
       document.getElementById("colActionHeader").classList.toggle("hidden", !(isAdmin || isOfficer));
       document.getElementById("btnAddLeave").classList.toggle("hidden", !canCreateRequests);
       document.getElementById("btnAddRepair").classList.toggle("hidden", !canCreateRequests);
+      document.getElementById("dutyCheckInBar").classList.toggle("hidden", !canConfirmStudentReturn());
+      document.getElementById("colLateActionHeader").classList.toggle("hidden", !canConfirmStudentReturn());
 
       renderTable();
     }
@@ -1401,7 +1607,7 @@
       if (currentUser.role === "STUDENT") {
         studentPasswords[currentUser.studentId] = newPass;
       } else {
-        const idx = staffAccounts.findIndex(a => a.username.toLowerCase() === currentUser.username.toLowerCase());
+        const idx = staffAccounts.findIndex(a => a.username.trim().toLowerCase() === currentUser.username.trim().toLowerCase());
         if (idx !== -1) {
           staffAccounts[idx].password = newPass;
         }
@@ -1444,7 +1650,7 @@
       const username = document.getElementById("newAccUsername").value.trim();
       const displayName = document.getElementById("newAccDisplayName").value.trim();
 
-      const exists = getAllAccountsList().some(a => a.username.toLowerCase() === username.toLowerCase());
+      const exists = getAllAccountsList().some(a => a.username.trim().toLowerCase() === username.toLowerCase());
       if (exists) {
         alert(t("accExistsError"));
         return;
@@ -1480,7 +1686,7 @@
       if (username.toLowerCase() === "admin") return;
       if (!confirm(t("confirmDeleteAcc").replace("{username}", username))) return;
 
-      staffAccounts = staffAccounts.filter(a => a.username.toLowerCase() !== username.toLowerCase());
+      staffAccounts = staffAccounts.filter(a => a.username.trim().toLowerCase() !== username.trim().toLowerCase());
       if (studentPasswords && studentPasswords[username]) {
         delete studentPasswords[username];
       }
@@ -1595,6 +1801,7 @@
           r.building === off.assignedBuilding && r.floor === off.assignedFloor
         );
         const totalFloor = floorStudents.length;
+        const unmarkedFloor = floorStudents.filter(r => getAttendanceStatus(r) === "UNMARKED").length;
         const presentFloor = floorStudents.filter(r => getAttendanceStatus(r) === "PRESENT").length;
         const absentFloor = floorStudents.filter(r => getAttendanceStatus(r) === "ABSENT").length;
         const lateFloor = floorStudents.filter(r => getAttendanceStatus(r) === "LATE").length;
@@ -1612,6 +1819,7 @@
             <td class="py-3 px-4">
               <div class="flex flex-wrap gap-1.5 text-xs font-semibold">
                 <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">${t("statTotal")}: ${totalFloor}</span>
+                <span class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">${t("attUnmarked")}: ${unmarkedFloor}</span>
                 <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">${t("attPresent")}: ${presentFloor}</span>
                 <span class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-700">${t("attAbsent")}: ${absentFloor}</span>
                 <span class="px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">${t("attLate")}: ${lateFloor}</span>
@@ -1635,35 +1843,46 @@
       renderTable();
     };
 
-    function getTodayString() {
-      const now = new Date();
-      const offset = now.getTimezoneOffset();
-      const localDate = new Date(now.getTime() - offset * 60 * 1000);
-      return localDate.toISOString().split("T")[0];
-    }
-
     window.setToday = function() {
-      document.getElementById("attendanceDate").value = getTodayString();
+      const activeSession = getActiveAttendanceSessionDate();
+      lastTrackedSessionDate = activeSession;
+      document.getElementById("attendanceDate").value = activeSession;
       renderTable();
     };
 
     function getSelectedDate() {
       const input = document.getElementById("attendanceDate");
-      if (!input.value) input.value = getTodayString();
+      if (!input.value) input.value = getActiveAttendanceSessionDate();
       return input.value;
+    }
+
+    function isResidentLateLocked(resident, dateStr = getSelectedDate()) {
+      const dayMap = attendanceRecords && attendanceRecords[dateStr];
+      if (dayMap && dayMap[resident.id] === "LATE") {
+        return true;
+      }
+      return (entryExitLogs || []).some(log =>
+        log.residentId === resident.id &&
+        log.sessionDate === dateStr &&
+        !log.returnedAt
+      );
     }
 
     function getAttendanceStatus(resident) {
       const dateStr = getSelectedDate();
+      if (isResidentLateLocked(resident, dateStr)) {
+        return "LATE";
+      }
       const dayMap = attendanceRecords && attendanceRecords[dateStr];
       if (dayMap && dayMap[resident.id]) {
         return dayMap[resident.id];
       }
-      return "PRESENT";
+      return "UNMARKED";
     }
 
     function canModifyResident(resident) {
       if (!currentUser || !canActAttendanceNow()) return false;
+      if (isResidentLateLocked(resident)) return false;
       if (currentUser.role === "ADMIN") return true;
       if (currentUser.role === "OFFICER") {
         return resident.building === currentUser.assignedBuilding && resident.floor === currentUser.assignedFloor;
@@ -1678,7 +1897,11 @@
       if (!attendanceRecords[dateStr]) {
         attendanceRecords[dateStr] = {};
       }
-      attendanceRecords[dateStr][residentId] = attStatus;
+      if (attendanceRecords[dateStr][residentId] === attStatus) {
+        delete attendanceRecords[dateStr][residentId];
+      } else {
+        attendanceRecords[dateStr][residentId] = attStatus;
+      }
       persistAllState(true);
       renderTable();
     };
@@ -1686,15 +1909,177 @@
     window.markAllFiltered = function(attStatus) {
       if (!canActAttendanceNow()) return;
       if (!currentUser || (currentUser.role !== "ADMIN" && currentUser.role !== "OFFICER")) return;
-      const filtered = getFilteredResidents().filter(r => canModifyResident(r));
-      if (filtered.length === 0) return;
+      const targets = getFilteredResidents().filter(r =>
+        canModifyResident(r) && getAttendanceStatus(r) === "UNMARKED"
+      );
+      if (targets.length === 0) return;
       const dateStr = getSelectedDate();
       if (!attendanceRecords[dateStr]) {
         attendanceRecords[dateStr] = {};
       }
-      filtered.forEach(r => {
+      targets.forEach(r => {
         attendanceRecords[dateStr][r.id] = attStatus;
       });
+      persistAllState(true);
+      renderTable();
+    };
+
+    // ================= ĐĂNG KÝ VỀ MUỘN & XÁC NHẬN VỀ KTX =================
+    window.openLateRegisterModal = function() {
+      if (!canRegisterLateNow()) {
+        alert(t("lateRegClosedAlert"));
+        return;
+      }
+      const scoped = getScopedResidents();
+      if (scoped.length === 0) return;
+
+      const selectEl = document.getElementById("lateResidentId");
+      selectEl.innerHTML = scoped.map(r =>
+        `<option value="${r.id}">${r.name} (${r.studentId}) - ${r.building} ${r.floor} ${r.room}</option>`
+      ).join("");
+
+      document.getElementById("lateExpectedTime").value = "23:00";
+      document.getElementById("lateReasonInput").value = "";
+      document.getElementById("lateRegisterModal").classList.remove("hidden");
+      document.getElementById("lateRegisterModal").classList.add("flex");
+    };
+
+    window.closeLateRegisterModal = function() {
+      document.getElementById("lateRegisterModal").classList.add("hidden");
+      document.getElementById("lateRegisterModal").classList.remove("flex");
+    };
+
+    window.submitLateRegister = function(e) {
+      e.preventDefault();
+      if (!canRegisterLateNow()) {
+        alert(t("lateRegClosedAlert"));
+        return;
+      }
+      const residentId = Number(document.getElementById("lateResidentId").value);
+      const resident = residents.find(r => r.id === residentId);
+      if (!resident) return;
+
+      const expectedTime = document.getElementById("lateExpectedTime").value || "23:00";
+      const reason = document.getElementById("lateReasonInput").value.trim();
+      const sessionDate = getActiveAttendanceSessionDate();
+
+      if (!attendanceRecords[sessionDate]) {
+        attendanceRecords[sessionDate] = {};
+      }
+      attendanceRecords[sessionDate][residentId] = "LATE";
+
+      const existingIdx = entryExitLogs.findIndex(
+        log => log.residentId === residentId && log.sessionDate === sessionDate && !log.returnedAt
+      );
+      const logRecord = {
+        id: Date.now(),
+        residentId,
+        studentId: (resident.studentId || "").trim(),
+        studentName: resident.name || "",
+        sessionDate,
+        registeredAt: formatNowTime(),
+        expectedTime,
+        reason,
+        returnedAt: null,
+        confirmedBy: null
+      };
+
+      if (existingIdx !== -1) {
+        entryExitLogs[existingIdx] = logRecord;
+      } else {
+        entryExitLogs.unshift(logRecord);
+      }
+
+      document.getElementById("attendanceDate").value = sessionDate;
+      persistAllState(true);
+      window.closeLateRegisterModal();
+      renderTable();
+      alert(
+        t("lateRegSuccess")
+          .replace("{name}", resident.name || "")
+          .replace("{sid}", resident.studentId || "")
+      );
+    };
+
+    function markStudentReturnedById(residentId, matchedSidText) {
+      const resident = residents.find(r => r.id === residentId);
+      if (!resident) return false;
+
+      const activeSession = getActiveAttendanceSessionDate();
+      const returnedTime = formatNowTime();
+      const pendingLogs = entryExitLogs.filter(
+        log => log.residentId === residentId && !log.returnedAt
+      );
+
+      if (pendingLogs.length > 0) {
+        pendingLogs.forEach(log => {
+          log.returnedAt = returnedTime;
+          log.confirmedBy = currentUser ? currentUser.displayName : "Staff";
+          if (!attendanceRecords[log.sessionDate]) {
+            attendanceRecords[log.sessionDate] = {};
+          }
+          attendanceRecords[log.sessionDate][residentId] = "PRESENT";
+        });
+      } else {
+        if (!attendanceRecords[activeSession]) {
+          attendanceRecords[activeSession] = {};
+        }
+        attendanceRecords[activeSession][residentId] = "PRESENT";
+        entryExitLogs.unshift({
+          id: Date.now(),
+          residentId,
+          studentId: (resident.studentId || "").trim(),
+          studentName: resident.name || "",
+          sessionDate: activeSession,
+          registeredAt: "-",
+          expectedTime: "-",
+          reason: "Xác nhận về trực tiếp / 直接返宿登記",
+          returnedAt: returnedTime,
+          confirmedBy: currentUser ? currentUser.displayName : "Staff"
+        });
+      }
+
+      persistAllState(true);
+      renderTable();
+      alert(
+        t("returnSuccessAlert")
+          .replace("{name}", resident.name || "")
+          .replace("{sid}", matchedSidText || resident.studentId || "")
+      );
+      return true;
+    }
+
+    window.handleDutyStudentReturn = function(e) {
+      e.preventDefault();
+      if (!canConfirmStudentReturn()) return;
+      const inputEl = document.getElementById("dutyReturnStudentIdInput");
+      const rawSid = inputEl.value.trim();
+      if (!rawSid) return;
+
+      const scoped = getScopedResidents();
+      const exactMatches = scoped.filter(
+        r => (r.studentId || "").trim().toLowerCase() === rawSid.toLowerCase()
+      );
+
+      if (exactMatches.length === 0) {
+        alert(t("returnNotFoundAlert").replace("{sid}", rawSid));
+        return;
+      }
+
+      const target = exactMatches[0];
+      markStudentReturnedById(target.id, target.studentId || rawSid);
+      inputEl.value = "";
+    };
+
+    window.confirmReturnFromLog = function(residentId) {
+      if (!canConfirmStudentReturn()) return;
+      const resident = residents.find(r => r.id === residentId);
+      markStudentReturnedById(residentId, resident ? resident.studentId : "");
+    };
+
+    window.deleteEntryExitLog = function(logId) {
+      if (!currentUser || currentUser.role !== "ADMIN") return;
+      entryExitLogs = entryExitLogs.filter(item => item.id !== logId);
       persistAllState(true);
       renderTable();
     };
@@ -1744,16 +2129,21 @@
 
     function getAttendanceCellHTML(resident) {
       const current = getAttendanceStatus(resident);
+      const lockedLate = isResidentLateLocked(resident);
       const canEdit = canModifyResident(resident);
 
-      const badgeHTML = current === "PRESENT"
-        ? `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700"><i class="fa-solid fa-check mr-1"></i>${t("attPresent")}</span>`
-        : current === "ABSENT"
-          ? `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-700"><i class="fa-solid fa-xmark mr-1"></i>${t("attAbsent")}</span>`
-          : `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-700"><i class="fa-solid fa-person-running mr-1"></i>${t("attLate")}</span>`;
+      if (lockedLate || current === "LATE") {
+        return `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-800 border border-orange-300 inline-flex items-center gap-1"><i class="fa-solid fa-lock text-[11px]"></i>${t("attLateLocked")}</span>`;
+      }
 
       if (!canEdit) {
-        return badgeHTML;
+        if (current === "PRESENT") {
+          return `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700"><i class="fa-solid fa-check mr-1"></i>${t("attPresent")}</span>`;
+        }
+        if (current === "ABSENT") {
+          return `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-700"><i class="fa-solid fa-xmark mr-1"></i>${t("attAbsent")}</span>`;
+        }
+        return `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-500 border border-slate-200"><i class="fa-regular fa-circle mr-1"></i>${t("attUnmarked")}</span>`;
       }
 
       const presentCls = current === "PRESENT"
@@ -1762,21 +2152,16 @@
       const absentCls = current === "ABSENT"
         ? "bg-rose-600 text-white shadow-sm"
         : "bg-slate-100 text-slate-600 hover:bg-rose-50 hover:text-rose-700";
-      const lateCls = current === "LATE"
-        ? "bg-orange-500 text-white shadow-sm"
-        : "bg-slate-100 text-slate-600 hover:bg-orange-50 hover:text-orange-700";
 
       return `
-        <div class="inline-flex flex-wrap gap-1.5">
+        <div class="inline-flex flex-wrap items-center gap-1.5">
           <button type="button" onclick="setAttendanceStatus(${resident.id}, 'PRESENT')" class="px-2.5 py-1 rounded-lg text-xs font-semibold transition ${presentCls}">
             <i class="fa-solid fa-check mr-1"></i>${t("attPresent")}
           </button>
           <button type="button" onclick="setAttendanceStatus(${resident.id}, 'ABSENT')" class="px-2.5 py-1 rounded-lg text-xs font-semibold transition ${absentCls}">
             <i class="fa-solid fa-xmark mr-1"></i>${t("attAbsent")}
           </button>
-          <button type="button" onclick="setAttendanceStatus(${resident.id}, 'LATE')" class="px-2.5 py-1 rounded-lg text-xs font-semibold transition ${lateCls}">
-            <i class="fa-solid fa-person-running mr-1"></i>${t("attLate")}
-          </button>
+          ${current === "UNMARKED" ? `<span class="text-[11px] text-slate-400 ml-1">${t("attUnmarked")}</span>` : ""}
         </div>
       `;
     }
@@ -1797,10 +2182,10 @@
         return list.filter(r => r.building === currentUser.assignedBuilding);
       }
       if (isHomeroomTeacherRole(currentUser.role)) {
-        return list.filter(r => (r.className || "").toLowerCase() === (currentUser.assignedClass || "").toLowerCase());
+        return list.filter(r => (r.className || "").trim().toLowerCase() === (currentUser.assignedClass || "").trim().toLowerCase());
       }
       if (currentUser.role === "STUDENT") {
-        return list.filter(r => (r.studentId || "").toLowerCase() === (currentUser.studentId || "").toLowerCase());
+        return list.filter(r => (r.studentId || "").trim().toLowerCase() === (currentUser.studentId || "").trim().toLowerCase());
       }
       return list;
     }
@@ -1828,6 +2213,61 @@
         const matchAtt = attFilter === "ALL" || attStatus === attFilter;
         return matchKeyword && matchBuilding && matchFloor && matchAtt;
       });
+    }
+
+    function renderEntryExitSection(scopedResidents) {
+      const scopedIds = new Set(scopedResidents.map(r => r.id));
+      const visibleLogs = (entryExitLogs || []).filter(item => scopedIds.has(item.residentId));
+      const tbody = document.getElementById("entryExitTableBody");
+      const emptyEl = document.getElementById("entryExitEmptyState");
+      const canConfirm = canConfirmStudentReturn();
+      const isAdmin = currentUser && currentUser.role === "ADMIN";
+
+      if (visibleLogs.length === 0) {
+        tbody.innerHTML = "";
+        emptyEl.classList.remove("hidden");
+        return;
+      }
+
+      emptyEl.classList.add("hidden");
+      tbody.innerHTML = visibleLogs.map(log => {
+        const res = residents.find(r => r.id === log.residentId);
+        if (!res) return "";
+
+        const statusHTML = log.returnedAt
+          ? `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 inline-flex items-center gap-1"><i class="fa-solid fa-circle-check"></i>${t("statusReturnedAt").replace("{time}", log.returnedAt)}</span>`
+          : `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-800 inline-flex items-center gap-1"><i class="fa-solid fa-lock"></i>${t("statusPendingReturn")}</span>`;
+
+        let actionCell = "";
+        if (canConfirm) {
+          actionCell = `
+            <td class="py-3 px-4 text-right space-x-1.5">
+              ${!log.returnedAt ? `<button type="button" onclick="confirmReturnFromLog(${res.id})" class="text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-lg shadow-sm transition">${t("confirmReturnInlineBtn")}</button>` : ""}
+              ${isAdmin ? `<button type="button" onclick="deleteEntryExitLog(${log.id})" class="text-rose-500 hover:text-rose-700 p-1.5 rounded hover:bg-rose-50" title="${t("deleteTitle")}"><i class="fa-solid fa-trash"></i></button>` : ""}
+            </td>
+          `;
+        }
+
+        return `
+          <tr class="hover:bg-orange-50/30 transition">
+            <td class="py-3 px-4">
+              <span class="font-semibold text-indigo-700">${res.building}</span>
+              <div class="text-xs text-slate-500">${t("floorPrefix")} ${res.floor} · ${t("roomPrefix")} ${res.room}</div>
+            </td>
+            <td class="py-3 px-4">
+              <div class="font-semibold text-slate-800">${res.name}</div>
+              <div class="text-xs font-mono text-indigo-600">${res.studentId} · ${res.className}</div>
+            </td>
+            <td class="py-3 px-4 text-xs">
+              <div class="font-semibold text-slate-700">ĐK: ${log.registeredAt || "-"}</div>
+              <div class="text-orange-700 font-medium">Dự kiến: ${log.expectedTime || "-"} (${log.sessionDate})</div>
+            </td>
+            <td class="py-3 px-4 text-slate-600">${log.reason || "-"}</td>
+            <td class="py-3 px-4">${statusHTML}</td>
+            ${actionCell}
+          </tr>
+        `;
+      }).join("");
     }
 
     function renderDedicatedSections(scopedResidents) {
@@ -1922,12 +2362,14 @@
       renderBuildingAndFloorSteps(scoped);
 
       const total = scoped.length;
+      const unmarkedCount = scoped.filter(r => getAttendanceStatus(r) === "UNMARKED").length;
       const presentCount = scoped.filter(r => getAttendanceStatus(r) === "PRESENT").length;
       const absentCount = scoped.filter(r => getAttendanceStatus(r) === "ABSENT").length;
       const lateCount = scoped.filter(r => getAttendanceStatus(r) === "LATE").length;
       const rate = total > 0 ? Math.round((presentCount / total) * 100) : 0;
 
       document.getElementById("statTotal").textContent = total;
+      document.getElementById("statAttUnmarked").textContent = unmarkedCount;
       document.getElementById("statAttPresent").textContent = presentCount;
       document.getElementById("statAttAbsent").textContent = absentCount;
       document.getElementById("statAttLate").textContent = lateCount;
@@ -1962,7 +2404,7 @@
           const isOfficer = currentUser.role === "OFFICER";
 
           tbody.innerHTML = filtered.map(item => {
-            const canMod = canModifyResident(item);
+            const canMod = isAdmin || (isOfficer && item.building === currentUser.assignedBuilding && item.floor === currentUser.assignedFloor);
             let actionCell = "";
             if (isAdmin) {
               actionCell = `
@@ -2004,6 +2446,7 @@
         }
       }
 
+      renderEntryExitSection(scoped);
       renderOfficerManagementSection();
       renderDedicatedSections(scoped);
     }
@@ -2288,7 +2731,10 @@
 
     window.editStudent = function(id) {
       const item = residents.find(r => r.id === id);
-      if (!item || !canModifyResident(item)) return;
+      if (!item || !currentUser) return;
+      const canEditInfo = currentUser.role === "ADMIN" ||
+        (currentUser.role === "OFFICER" && item.building === currentUser.assignedBuilding && item.floor === currentUser.assignedFloor);
+      if (!canEditInfo) return;
       refreshFloorDropdowns();
       editingId = item.id;
       document.getElementById("editId").value = item.id;
@@ -2352,6 +2798,7 @@
         if (Array.isArray(val.staffAccounts)) staffAccounts = val.staffAccounts;
         studentPasswords = val.studentPasswords && typeof val.studentPasswords === "object" ? val.studentPasswords : {};
         attendanceRecords = val.attendanceRecords && typeof val.attendanceRecords === "object" ? val.attendanceRecords : {};
+        entryExitLogs = Array.isArray(val.entryExitLogs) ? val.entryExitLogs : [];
         leaveRequests = Array.isArray(val.leaveRequests) ? val.leaveRequests : [];
         repairRequests = Array.isArray(val.repairRequests) ? val.repairRequests : [];
         persistAllState(false);
@@ -2368,12 +2815,21 @@
       setSyncStatus("err", "Offline / Rules");
     });
 
-    document.getElementById("attendanceDate").value = getTodayString();
+    lastTrackedSessionDate = getActiveAttendanceSessionDate();
+    document.getElementById("attendanceDate").value = lastTrackedSessionDate;
     applyLanguageUI();
     updateAuthUI();
+
     setInterval(() => {
+      const currentSession = getActiveAttendanceSessionDate();
+      if (lastTrackedSessionDate && currentSession !== lastTrackedSessionDate) {
+        lastTrackedSessionDate = currentSession;
+        document.getElementById("attendanceDate").value = currentSession;
+        if (currentUser) renderTable();
+        return;
+      }
       if (currentUser) updateAttendanceWindowBadge();
-    }, 60000);
+    }, 30000);
   </script>
 </body>
 </html>
