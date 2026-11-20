@@ -68,6 +68,10 @@
               <span data-i18n="appTitle">Quản Lý Ký Túc Xá</span>
             </h1>
             <span id="userRoleBadge" class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-white/20 text-white border border-white/30"></span>
+            <span id="syncStatusBadge" class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-400/20 text-emerald-100 border border-emerald-300/30 flex items-center gap-1">
+              <i class="fa-solid fa-cloud-arrow-up text-[11px]"></i>
+              <span id="syncStatusText">Firebase Sync</span>
+            </span>
           </div>
           <p id="welcomeUserText" class="text-indigo-200 text-xs mt-0.5"></p>
         </div>
@@ -547,7 +551,25 @@
     </div>
   </div>
 
-  <script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCIOQ6WN78Y-9smbh-YagNjGSZOFfrp-K4",
+      authDomain: "dorm-management-6c4bf.firebaseapp.com",
+      databaseURL: "https://dorm-management-6c4bf-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "dorm-management-6c4bf",
+      storageBucket: "dorm-management-6c4bf.firebasestorage.app",
+      messagingSenderId: "521156662566",
+      appId: "1:521156662566:web:ff93908e12282bc23fdde7",
+      measurementId: "G-R7PDDN1YNF"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const dbRef = ref(db, "dorm_system_v1");
+
     const translations = {
       vi: {
         loginTitle: "Đăng Nhập Hệ Thống KTX",
@@ -845,7 +867,7 @@
     const baseFloorsList = ["1F", "2F", "3F", "4F", "5F", "6F", "7F", "8F", "9F"];
 
     let currentLang = localStorage.getItem("dorm_lang_v1") || "vi";
-    let currentUser = JSON.parse(localStorage.getItem("dorm_current_user_v2")) || null;
+    let currentUser = JSON.parse(sessionStorage.getItem("dorm_session_user_v1")) || null;
     let adminOverrideAttendanceOpen = false;
     let editingId = null;
 
@@ -872,6 +894,52 @@
     let attendanceRecords = JSON.parse(localStorage.getItem("dorm_attendance_v3")) || {};
     let leaveRequests = JSON.parse(localStorage.getItem("dorm_leave_requests_v1")) || defaultLeaveRequests;
     let repairRequests = JSON.parse(localStorage.getItem("dorm_repair_requests_v1")) || defaultRepairRequests;
+
+    let isApplyingRemoteData = false;
+
+    function setSyncStatus(state, label) {
+      const badge = document.getElementById("syncStatusBadge");
+      const text = document.getElementById("syncStatusText");
+      if (!badge || !text) return;
+      text.textContent = label;
+      if (state === "ok") {
+        badge.className = "text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-400/20 text-emerald-100 border border-emerald-300/30 flex items-center gap-1";
+      } else if (state === "saving") {
+        badge.className = "text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-100 border border-amber-300/30 flex items-center gap-1";
+      } else {
+        badge.className = "text-xs font-semibold px-2.5 py-0.5 rounded-full bg-rose-400/20 text-rose-100 border border-rose-300/30 flex items-center gap-1";
+      }
+    }
+
+    function pushCloudState() {
+      if (isApplyingRemoteData) return;
+      setSyncStatus("saving", "Syncing...");
+      set(dbRef, {
+        residents,
+        staffAccounts,
+        studentPasswords,
+        attendanceRecords,
+        leaveRequests,
+        repairRequests,
+        updatedAt: Date.now()
+      }).then(() => {
+        setSyncStatus("ok", "Firebase Live");
+      }).catch(() => {
+        setSyncStatus("err", "Sync Error");
+      });
+    }
+
+    function persistAllState(pushToCloud = true) {
+      localStorage.setItem("dorm_residents_v5", JSON.stringify(residents));
+      localStorage.setItem("dorm_staff_accounts_v1", JSON.stringify(staffAccounts));
+      localStorage.setItem("dorm_student_passwords_v1", JSON.stringify(studentPasswords));
+      localStorage.setItem("dorm_attendance_v3", JSON.stringify(attendanceRecords));
+      localStorage.setItem("dorm_leave_requests_v1", JSON.stringify(leaveRequests));
+      localStorage.setItem("dorm_repair_requests_v1", JSON.stringify(repairRequests));
+      if (pushToCloud) {
+        pushCloudState();
+      }
+    }
 
     function t(key) {
       return translations[currentLang][key] || translations.vi[key] || key;
@@ -926,11 +994,11 @@
       return isWithinAttendanceWindow();
     }
 
-    function toggleAdminOverrideWindow() {
+    window.toggleAdminOverrideWindow = function() {
       if (!currentUser || currentUser.role !== "ADMIN") return;
       adminOverrideAttendanceOpen = !adminOverrideAttendanceOpen;
       renderTable();
-    }
+    };
 
     function updateAttendanceWindowBadge() {
       const badge = document.getElementById("attendanceWindowBadge");
@@ -964,22 +1032,17 @@
       markAllBtn.classList.toggle("cursor-not-allowed", !effectiveOpen);
     }
 
-    function saveAccountsStorage() {
-      localStorage.setItem("dorm_staff_accounts_v1", JSON.stringify(staffAccounts));
-      localStorage.setItem("dorm_student_passwords_v1", JSON.stringify(studentPasswords));
-    }
-
     function getAllAccountsList() {
-      const list = staffAccounts.map(acc => ({ ...acc }));
+      const list = (staffAccounts || []).map(acc => ({ ...acc }));
       const seenUsernames = new Set(list.map(a => a.username.toLowerCase()));
 
-      residents.forEach(r => {
+      (residents || []).forEach(r => {
         const sid = (r.studentId || "").trim();
         if (sid && !seenUsernames.has(sid.toLowerCase())) {
           seenUsernames.add(sid.toLowerCase());
           list.push({
             username: sid,
-            password: studentPasswords[sid] || "123456",
+            password: (studentPasswords && studentPasswords[sid]) || "123456",
             role: "STUDENT",
             displayName: `${r.name} (${sid})`,
             studentId: sid,
@@ -999,7 +1062,7 @@
       return t("attLate");
     }
 
-    function onBuildingSelectChange(buildingValue) {
+    window.onBuildingSelectChange = function(buildingValue) {
       if (buildingValue === "ALL") {
         hasSelectedBuildingStep = false;
         hasSelectedFloorStep = false;
@@ -1010,27 +1073,27 @@
         document.getElementById("filterFloor").value = "ALL";
       }
       renderTable();
-    }
+    };
 
-    function onFloorSelectChange(floorValue) {
+    window.onFloorSelectChange = function() {
       if (document.getElementById("filterBuilding").value !== "ALL") {
         hasSelectedBuildingStep = true;
         hasSelectedFloorStep = true;
       }
       renderTable();
-    }
+    };
 
-    function selectBuildingTab(buildingValue) {
+    window.selectBuildingTab = function(buildingValue) {
       document.getElementById("filterBuilding").value = buildingValue;
-      onBuildingSelectChange(buildingValue);
-    }
+      window.onBuildingSelectChange(buildingValue);
+    };
 
-    function selectFloorTab(floorValue) {
+    window.selectFloorTab = function(floorValue) {
       document.getElementById("filterFloor").value = floorValue;
       hasSelectedBuildingStep = true;
       hasSelectedFloorStep = true;
       renderTable();
-    }
+    };
 
     function shouldShowRosterList() {
       if (!currentUser) return false;
@@ -1136,14 +1199,10 @@
       }
     }
 
-    function handleLogin(e) {
+    window.handleLogin = function(e) {
       e.preventDefault();
       const username = document.getElementById("loginUsername").value.trim();
       const password = document.getElementById("loginPassword").value.trim();
-      loginWithCredentials(username, password);
-    }
-
-    function loginWithCredentials(username, password) {
       const allAccs = getAllAccountsList();
       const found = allAccs.find(u => u.username.toLowerCase() === username.toLowerCase() && u.password === password);
       const errEl = document.getElementById("loginError");
@@ -1158,19 +1217,19 @@
       currentUser = found;
       hasSelectedBuildingStep = false;
       hasSelectedFloorStep = false;
-      localStorage.setItem("dorm_current_user_v2", JSON.stringify(currentUser));
+      sessionStorage.setItem("dorm_session_user_v1", JSON.stringify(currentUser));
       updateAuthUI();
-    }
+    };
 
-    function logout() {
+    window.logout = function() {
       currentUser = null;
       adminOverrideAttendanceOpen = false;
       hasSelectedBuildingStep = false;
       hasSelectedFloorStep = false;
-      localStorage.removeItem("dorm_current_user_v2");
+      sessionStorage.removeItem("dorm_session_user_v1");
       document.getElementById("loginPassword").value = "";
       updateAuthUI();
-    }
+    };
 
     function updateAuthUI() {
       const loginScreen = document.getElementById("loginScreen");
@@ -1242,28 +1301,28 @@
       renderTable();
     }
 
-    function openChangePasswordModal() {
+    window.openChangePasswordModal = function() {
       document.getElementById("oldPasswordInput").value = "";
       document.getElementById("newPasswordInput").value = "";
       const msgEl = document.getElementById("changePassMsg");
       msgEl.classList.add("hidden");
       document.getElementById("changePasswordModal").classList.remove("hidden");
       document.getElementById("changePasswordModal").classList.add("flex");
-    }
+    };
 
-    function closeChangePasswordModal() {
+    window.closeChangePasswordModal = function() {
       document.getElementById("changePasswordModal").classList.add("hidden");
       document.getElementById("changePasswordModal").classList.remove("flex");
-    }
+    };
 
-    function submitChangePassword(e) {
+    window.submitChangePassword = function(e) {
       e.preventDefault();
       const oldPass = document.getElementById("oldPasswordInput").value.trim();
       const newPass = document.getElementById("newPasswordInput").value.trim();
       const msgEl = document.getElementById("changePassMsg");
 
       const currentPass = currentUser.role === "STUDENT"
-        ? (studentPasswords[currentUser.studentId] || "123456")
+        ? ((studentPasswords && studentPasswords[currentUser.studentId]) || "123456")
         : currentUser.password;
 
       if (oldPass !== currentPass) {
@@ -1282,37 +1341,37 @@
         }
       }
 
-      saveAccountsStorage();
+      persistAllState(true);
       currentUser.password = newPass;
-      localStorage.setItem("dorm_current_user_v2", JSON.stringify(currentUser));
+      sessionStorage.setItem("dorm_session_user_v1", JSON.stringify(currentUser));
 
       msgEl.textContent = t("passChangedSuccess");
       msgEl.className = "text-xs font-medium px-3 py-2 rounded-lg bg-emerald-50 text-emerald-700";
       msgEl.classList.remove("hidden");
-      setTimeout(() => closeChangePasswordModal(), 800);
-    }
+      setTimeout(() => window.closeChangePasswordModal(), 800);
+    };
 
-    function openAccountsModal() {
+    window.openAccountsModal = function() {
       if (!currentUser || currentUser.role !== "ADMIN") return;
       refreshFloorDropdowns();
-      toggleStaffAssignFields();
+      window.toggleStaffAssignFields();
       renderAccountsTable();
       document.getElementById("accountsModal").classList.remove("hidden");
       document.getElementById("accountsModal").classList.add("flex");
-    }
+    };
 
-    function closeAccountsModal() {
+    window.closeAccountsModal = function() {
       document.getElementById("accountsModal").classList.add("hidden");
       document.getElementById("accountsModal").classList.remove("flex");
-    }
+    };
 
-    function toggleStaffAssignFields() {
+    window.toggleStaffAssignFields = function() {
       const role = document.getElementById("newAccRole").value;
       document.getElementById("officerAssignWrap").classList.toggle("hidden", role !== "OFFICER");
       document.getElementById("teacherAssignWrap").classList.toggle("hidden", role !== "TEACHER");
-    }
+    };
 
-    function addStaffAccount(e) {
+    window.addStaffAccount = function(e) {
       e.preventDefault();
       const role = document.getElementById("newAccRole").value;
       const username = document.getElementById("newAccUsername").value.trim();
@@ -1339,45 +1398,45 @@
       }
 
       staffAccounts.push(newAcc);
-      saveAccountsStorage();
+      persistAllState(true);
       document.getElementById("newAccUsername").value = "";
       document.getElementById("newAccDisplayName").value = "";
       document.getElementById("newAccClass").value = "";
       renderAccountsTable();
       renderTable();
-    }
+    };
 
-    function deleteAccount(username) {
+    window.deleteAccount = function(username) {
       if (!currentUser || currentUser.role !== "ADMIN") return;
       if (username.toLowerCase() === "admin") return;
       if (!confirm(t("confirmDeleteAcc").replace("{username}", username))) return;
 
       staffAccounts = staffAccounts.filter(a => a.username.toLowerCase() !== username.toLowerCase());
-      if (studentPasswords[username]) {
+      if (studentPasswords && studentPasswords[username]) {
         delete studentPasswords[username];
       }
-      saveAccountsStorage();
+      persistAllState(true);
       renderAccountsTable();
       renderTable();
-    }
+    };
 
-    function updateOfficerAssignment(username, field, value) {
+    window.updateOfficerAssignment = function(username, field, value) {
       const acc = staffAccounts.find(a => a.username === username);
       if (acc) {
         acc[field] = value;
-        saveAccountsStorage();
+        persistAllState(true);
         renderAccountsTable();
         renderTable();
       }
-    }
+    };
 
-    function updateTeacherClass(username, value) {
+    window.updateTeacherClass = function(username, value) {
       const acc = staffAccounts.find(a => a.username === username);
       if (acc) {
         acc.assignedClass = value;
-        saveAccountsStorage();
+        persistAllState(true);
       }
-    }
+    };
 
     function renderAccountsTable() {
       const tbody = document.getElementById("accountsTableBody");
@@ -1437,12 +1496,12 @@
       }
       section.classList.remove("hidden");
 
-      const officers = staffAccounts.filter(a => a.role === "OFFICER");
+      const officers = (staffAccounts || []).filter(a => a.role === "OFFICER");
       document.getElementById("officerCountBadge").textContent = officers.length;
 
       const tbody = document.getElementById("officerLiveTableBody");
       tbody.innerHTML = officers.map(off => {
-        const floorStudents = residents.filter(r =>
+        const floorStudents = (residents || []).filter(r =>
           r.building === off.assignedBuilding && r.floor === off.assignedFloor
         );
         const totalFloor = floorStudents.length;
@@ -1478,13 +1537,13 @@
       }).join("");
     }
 
-    function openOfficerFloor(building, floor) {
+    window.openOfficerFloor = function(building, floor) {
       document.getElementById("filterBuilding").value = building;
       document.getElementById("filterFloor").value = floor;
       hasSelectedBuildingStep = true;
       hasSelectedFloorStep = true;
       renderTable();
-    }
+    };
 
     function getTodayString() {
       const now = new Date();
@@ -1493,10 +1552,10 @@
       return localDate.toISOString().split("T")[0];
     }
 
-    function setToday() {
+    window.setToday = function() {
       document.getElementById("attendanceDate").value = getTodayString();
       renderTable();
-    }
+    };
 
     function getSelectedDate() {
       const input = document.getElementById("attendanceDate");
@@ -1506,7 +1565,7 @@
 
     function getAttendanceStatus(resident) {
       const dateStr = getSelectedDate();
-      const dayMap = attendanceRecords[dateStr];
+      const dayMap = attendanceRecords && attendanceRecords[dateStr];
       if (dayMap && dayMap[resident.id]) {
         return dayMap[resident.id];
       }
@@ -1522,7 +1581,7 @@
       return false;
     }
 
-    function setAttendanceStatus(residentId, attStatus) {
+    window.setAttendanceStatus = function(residentId, attStatus) {
       const resident = residents.find(r => r.id === residentId);
       if (!resident || !canModifyResident(resident)) return;
       const dateStr = getSelectedDate();
@@ -1530,11 +1589,11 @@
         attendanceRecords[dateStr] = {};
       }
       attendanceRecords[dateStr][residentId] = attStatus;
-      saveAttendanceToStorage();
+      persistAllState(true);
       renderTable();
-    }
+    };
 
-    function markAllFiltered(attStatus) {
+    window.markAllFiltered = function(attStatus) {
       if (!canActAttendanceNow()) return;
       if (!currentUser || (currentUser.role !== "ADMIN" && currentUser.role !== "OFFICER")) return;
       const filtered = getFilteredResidents().filter(r => canModifyResident(r));
@@ -1546,9 +1605,9 @@
       filtered.forEach(r => {
         attendanceRecords[dateStr][r.id] = attStatus;
       });
-      saveAttendanceToStorage();
+      persistAllState(true);
       renderTable();
-    }
+    };
 
     function applyLanguageUI() {
       document.documentElement.lang = currentLang === "zh" ? "zh-Hant" : "vi";
@@ -1585,26 +1644,13 @@
       }
     }
 
-    function setLanguage(lang) {
+    window.setLanguage = function(lang) {
       if (lang !== "vi" && lang !== "zh") return;
       currentLang = lang;
       localStorage.setItem("dorm_lang_v1", lang);
       applyLanguageUI();
       if (currentUser) renderTable();
-    }
-
-    function saveToStorage() {
-      localStorage.setItem("dorm_residents_v5", JSON.stringify(residents));
-    }
-
-    function saveAttendanceToStorage() {
-      localStorage.setItem("dorm_attendance_v3", JSON.stringify(attendanceRecords));
-    }
-
-    function saveRequestsToStorage() {
-      localStorage.setItem("dorm_leave_requests_v1", JSON.stringify(leaveRequests));
-      localStorage.setItem("dorm_repair_requests_v1", JSON.stringify(repairRequests));
-    }
+    };
 
     function getAttendanceCellHTML(resident) {
       const current = getAttendanceStatus(resident);
@@ -1647,19 +1693,20 @@
 
     function getScopedResidents() {
       if (!currentUser) return [];
+      const list = Array.isArray(residents) ? residents : [];
       if (currentUser.role === "OFFICER") {
-        return residents.filter(r =>
+        return list.filter(r =>
           r.building === currentUser.assignedBuilding &&
           r.floor === currentUser.assignedFloor
         );
       }
       if (currentUser.role === "TEACHER") {
-        return residents.filter(r => (r.className || "").toLowerCase() === (currentUser.assignedClass || "").toLowerCase());
+        return list.filter(r => (r.className || "").toLowerCase() === (currentUser.assignedClass || "").toLowerCase());
       }
       if (currentUser.role === "STUDENT") {
-        return residents.filter(r => (r.studentId || "").toLowerCase() === (currentUser.studentId || "").toLowerCase());
+        return list.filter(r => (r.studentId || "").toLowerCase() === (currentUser.studentId || "").toLowerCase());
       }
-      return residents;
+      return list;
     }
 
     function getFilteredResidents() {
@@ -1688,7 +1735,7 @@
     function renderDedicatedSections(scopedResidents) {
       const scopedIds = new Set(scopedResidents.map(r => r.id));
 
-      const visibleLeaves = leaveRequests.filter(item => scopedIds.has(item.residentId));
+      const visibleLeaves = (leaveRequests || []).filter(item => scopedIds.has(item.residentId));
       document.getElementById("leaveCountBadge").textContent = visibleLeaves.length;
       const leaveBody = document.getElementById("leaveTableBody");
       const leaveEmpty = document.getElementById("leaveEmptyState");
@@ -1723,7 +1770,7 @@
         }).join("");
       }
 
-      const visibleRepairs = repairRequests.filter(item => scopedIds.has(item.residentId));
+      const visibleRepairs = (repairRequests || []).filter(item => scopedIds.has(item.residentId));
       document.getElementById("repairCountBadge").textContent = visibleRepairs.length;
       const repairBody = document.getElementById("repairTableBody");
       const repairEmpty = document.getElementById("repairEmptyState");
@@ -1863,7 +1910,7 @@
       renderDedicatedSections(scoped);
     }
 
-    function openDedicatedRequestModal(type) {
+    window.openDedicatedRequestModal = function(type) {
       const scoped = getScopedResidents();
       if (scoped.length === 0) return;
 
@@ -1894,14 +1941,14 @@
       detailInput.value = "";
       document.getElementById("dedicatedRequestModal").classList.remove("hidden");
       document.getElementById("dedicatedRequestModal").classList.add("flex");
-    }
+    };
 
-    function closeDedicatedRequestModal() {
+    window.closeDedicatedRequestModal = function() {
       document.getElementById("dedicatedRequestModal").classList.add("hidden");
       document.getElementById("dedicatedRequestModal").classList.remove("flex");
-    }
+    };
 
-    function submitDedicatedRequest(e) {
+    window.submitDedicatedRequest = function(e) {
       e.preventDefault();
       const type = document.getElementById("reqType").value;
       const residentId = Number(document.getElementById("reqResidentId").value);
@@ -1914,32 +1961,32 @@
         repairRequests.unshift({ id: Date.now(), residentId, item: meta, detail, done: false });
       }
 
-      saveRequestsToStorage();
-      closeDedicatedRequestModal();
+      persistAllState(true);
+      window.closeDedicatedRequestModal();
       renderTable();
       alert(t("requestCreatedSuccess"));
-    }
+    };
 
-    function deleteLeaveRequest(id) {
+    window.deleteLeaveRequest = function(id) {
       leaveRequests = leaveRequests.filter(item => item.id !== id);
-      saveRequestsToStorage();
+      persistAllState(true);
       renderTable();
-    }
+    };
 
-    function toggleRepairDone(id) {
+    window.toggleRepairDone = function(id) {
       const target = repairRequests.find(item => item.id === id);
       if (target) {
         target.done = !target.done;
-        saveRequestsToStorage();
+        persistAllState(true);
         renderTable();
       }
-    }
+    };
 
-    function deleteRepairRequest(id) {
+    window.deleteRepairRequest = function(id) {
       repairRequests = repairRequests.filter(item => item.id !== id);
-      saveRequestsToStorage();
+      persistAllState(true);
       renderTable();
-    }
+    };
 
     function normalizeFloor(rawFloor) {
       const cleaned = (rawFloor || "").trim().toUpperCase();
@@ -2005,11 +2052,11 @@
       return rows.filter(r => r.some(cell => cell !== ""));
     }
 
-    function triggerImportCSV() {
+    window.triggerImportCSV = function() {
       document.getElementById("csvFileInput").click();
-    }
+    };
 
-    function handleImportCSV(event) {
+    window.handleImportCSV = function(event) {
       const file = event.target.files[0];
       if (!file) return;
 
@@ -2063,17 +2110,16 @@
         }
 
         residents = [...newItems, ...residents];
-        saveToStorage();
-        saveAccountsStorage();
+        persistAllState(true);
         renderTable();
         alert(t("importSuccess").replace("{count}", importedCount));
         event.target.value = "";
       };
 
       reader.readAsText(file, "utf-8");
-    }
+    };
 
-    function downloadTemplateCSV() {
+    window.downloadTemplateCSV = function() {
       const headers = t("csvHeaders").join(",");
       const sampleRows = [
         `"華苑樓","1F","102-1","林大明","B113010","Lớp A",""`,
@@ -2085,9 +2131,9 @@
       link.href = URL.createObjectURL(blob);
       link.download = t("templateFileName");
       link.click();
-    }
+    };
 
-    function openModal() {
+    window.openModal = function() {
       refreshFloorDropdowns();
       editingId = null;
       document.getElementById("editId").value = "";
@@ -2104,15 +2150,15 @@
       document.getElementById("modalTitle").textContent = t("modalAddTitle");
       document.getElementById("formModal").classList.remove("hidden");
       document.getElementById("formModal").classList.add("flex");
-    }
+    };
 
-    function closeModal() {
+    window.closeModal = function() {
       editingId = null;
       document.getElementById("formModal").classList.add("hidden");
       document.getElementById("formModal").classList.remove("flex");
-    }
+    };
 
-    function saveStudent(e) {
+    window.saveStudent = function(e) {
       e.preventDefault();
       const editId = document.getElementById("editId").value;
       const sid = document.getElementById("studentId").value.trim();
@@ -2128,7 +2174,6 @@
 
       if (sid && !studentPasswords[sid]) {
         studentPasswords[sid] = "123456";
-        saveAccountsStorage();
       }
 
       if (editId) {
@@ -2138,12 +2183,12 @@
         residents.unshift({ id: Date.now(), ...data });
       }
 
-      saveToStorage();
+      persistAllState(true);
       renderTable();
-      closeModal();
-    }
+      window.closeModal();
+    };
 
-    function editStudent(id) {
+    window.editStudent = function(id) {
       const item = residents.find(r => r.id === id);
       if (!item || !canModifyResident(item)) return;
       refreshFloorDropdowns();
@@ -2159,18 +2204,18 @@
       document.getElementById("modalTitle").textContent = t("modalEditTitle");
       document.getElementById("formModal").classList.remove("hidden");
       document.getElementById("formModal").classList.add("flex");
-    }
+    };
 
-    function deleteStudent(id) {
+    window.deleteStudent = function(id) {
       if (!currentUser || currentUser.role !== "ADMIN") return;
       if (confirm(t("confirmDelete"))) {
         residents = residents.filter(r => r.id !== id);
-        saveToStorage();
+        persistAllState(true);
         renderTable();
       }
-    }
+    };
 
-    function exportCSV() {
+    window.exportCSV = function() {
       const scoped = getScopedResidents();
       const headers = t("csvHeaders").join(",");
       const rows = scoped.map(r => {
@@ -2182,9 +2227,9 @@
       link.href = URL.createObjectURL(blob);
       link.download = t("csvFileName");
       link.click();
-    }
+    };
 
-    function exportAttendanceCSV() {
+    window.exportAttendanceCSV = function() {
       const dateStr = getSelectedDate();
       const scoped = getScopedResidents();
       const headers = t("attCsvHeaders").join(",");
@@ -2199,7 +2244,31 @@
       link.href = URL.createObjectURL(blob);
       link.download = t("attCsvFileName").replace("{date}", dateStr);
       link.click();
-    }
+    };
+
+    onValue(dbRef, (snapshot) => {
+      const val = snapshot.val();
+      isApplyingRemoteData = true;
+      if (val) {
+        if (Array.isArray(val.residents)) residents = val.residents;
+        if (Array.isArray(val.staffAccounts)) staffAccounts = val.staffAccounts;
+        studentPasswords = val.studentPasswords && typeof val.studentPasswords === "object" ? val.studentPasswords : {};
+        attendanceRecords = val.attendanceRecords && typeof val.attendanceRecords === "object" ? val.attendanceRecords : {};
+        leaveRequests = Array.isArray(val.leaveRequests) ? val.leaveRequests : [];
+        repairRequests = Array.isArray(val.repairRequests) ? val.repairRequests : [];
+        persistAllState(false);
+        setSyncStatus("ok", "Firebase Live");
+      } else {
+        setSyncStatus("ok", "Firebase Live");
+        pushCloudState();
+      }
+      isApplyingRemoteData = false;
+      if (currentUser) {
+        renderTable();
+      }
+    }, () => {
+      setSyncStatus("err", "Offline / Rules");
+    });
 
     document.getElementById("attendanceDate").value = getTodayString();
     applyLanguageUI();
