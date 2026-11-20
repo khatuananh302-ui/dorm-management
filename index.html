@@ -156,7 +156,7 @@
         </div>
       </div>
 
-      <!-- Thanh điều khiển Điểm danh hàng ngày (Làm mới lúc 20:00 tối) & Khung giờ 22:30 - 00:00 -->
+      <!-- Thanh điều khiển Điểm danh hàng ngày -->
       <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 pb-3 border-b border-slate-100">
           <div class="flex flex-wrap items-center gap-2">
@@ -170,6 +170,7 @@
             </button>
             <span id="attendanceRateBadge" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-700">0%</span>
             <span id="attendanceWindowBadge" class="text-xs font-semibold px-2.5 py-1 rounded-full"></span>
+            <span id="floorSubmittedBadge" class="hidden text-xs font-semibold px-2.5 py-1 rounded-full bg-violet-100 text-violet-800 border border-violet-300"></span>
           </div>
 
           <div class="flex flex-wrap items-center gap-2">
@@ -177,10 +178,24 @@
               <i class="fa-solid fa-clock-rotate-left"></i>
               <span id="overrideWindowBtnText">Mở tạm ngoài giờ</span>
             </button>
+
             <button id="btnMarkAllPresent" type="button" onclick="markAllFiltered('PRESENT')" class="text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-lg transition flex items-center gap-1">
               <i class="fa-solid fa-check-double"></i>
               <span data-i18n="markAllPresent">Có mặt tất cả (chưa điểm danh)</span>
             </button>
+
+            <!-- Nút Gửi đi (chốt & khóa ngay phần điểm danh của tầng) -->
+            <button id="btnSubmitFloorAttendance" type="button" onclick="openSubmitFloorModal()" class="hidden text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-1.5 rounded-lg shadow transition flex items-center gap-1.5">
+              <i class="fa-solid fa-paper-plane"></i>
+              <span data-i18n="submitFloorAttBtn">Gửi điểm danh tầng</span>
+            </button>
+
+            <!-- Nút mở khóa lại tầng (chỉ Admin) -->
+            <button id="btnUnlockFloorAttendance" type="button" onclick="unlockCurrentFloorAttendance()" class="hidden text-xs font-semibold bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+              <i class="fa-solid fa-lock-open"></i>
+              <span data-i18n="unlockFloorAttBtn">Mở khóa tầng</span>
+            </button>
+
             <button id="btnExportAttendance" type="button" onclick="exportAttendanceCSV()" class="text-xs font-semibold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 px-3 py-1.5 rounded-lg transition flex items-center gap-1">
               <i class="fa-solid fa-file-csv"></i>
               <span data-i18n="exportAttBtn">Xuất điểm danh ngày</span>
@@ -259,20 +274,33 @@
         </div>
       </div>
 
-      <!-- ================= MỤC RIÊNG: ĐĂNG KÝ VỀ MUỘN & LỊCH SỬ RA VÀO (晚歸登記與進出紀錄) ================= -->
+      <!-- ================= MỤC RIÊNG: LỊCH SỬ RA VÀO KTX, VỀ MUỘN & RA NGOÀI GIỜ GIỚI NGHIÊM ================= -->
       <section class="bg-white rounded-xl shadow-sm border border-orange-200 overflow-hidden">
-        <div class="px-4 py-3.5 bg-orange-50/80 border-b border-orange-200 flex flex-wrap items-center justify-between gap-2">
-          <div class="flex items-center gap-2">
-            <span class="w-8 h-8 rounded-lg bg-orange-500 text-white flex items-center justify-center text-sm">
+        <div class="px-4 py-3.5 bg-orange-50/80 border-b border-orange-200 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+          <div class="flex items-start gap-2.5">
+            <span class="w-8 h-8 rounded-lg bg-orange-500 text-white flex items-center justify-center text-sm shrink-0 mt-0.5">
               <i class="fa-solid fa-clock-rotate-left"></i>
             </span>
             <div>
-              <h2 data-i18n="lateSectionTitle" class="text-base font-bold text-orange-950">Mục Đăng Ký Về Muộn & Lịch Sử Ra Vào (晚歸登記與進出紀錄)</h2>
-              <p data-i18n="lateSectionSubtitle" class="text-xs text-orange-800/80">SV đăng ký về muộn từ 12:00 – trước 22:00 (tự động khóa sang Về muộn). Khi SV về KTX, giáo viên trực nhập đúng Mã SV để chuyển sang Có mặt.</p>
+              <h2 data-i18n="lateSectionTitle" class="text-base font-bold text-orange-950">Lịch Sử Ra Vào KTX: Đăng Ký Về Muộn & Ra Ngoài Giờ Giới Nghiêm</h2>
+              <p data-i18n="lateSectionSubtitle" class="text-xs text-orange-800/80">Đăng ký về muộn (12:00 – 22:00) hoặc ra ngoài trong giờ giới nghiêm tự động chuyển điểm danh sang Về muộn. Khi SV trở về KTX, giáo viên trực nhập đúng Mã SV để chuyển sang Có mặt.</p>
             </div>
           </div>
+
           <div class="flex flex-wrap items-center gap-2">
+            <button id="btnCurfewSettings" type="button" onclick="openCurfewSettingsModal()" class="hidden bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow transition flex items-center gap-1.5">
+              <i class="fa-solid fa-sliders"></i>
+              <span id="curfewSettingsBtnText">Giờ giới nghiêm: 22:00 - 06:00</span>
+            </button>
+
+            <span id="curfewWindowBadge" class="text-xs font-semibold px-2.5 py-1 rounded-full"></span>
             <span id="lateRegWindowBadge" class="text-xs font-semibold px-2.5 py-1 rounded-full"></span>
+
+            <button id="btnRegisterCurfewOut" type="button" onclick="openCurfewOutModal()" class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow transition flex items-center gap-1.5">
+              <i class="fa-solid fa-door-open"></i>
+              <span data-i18n="registerCurfewOutBtn">Đăng ký ra ngoài (giờ giới nghiêm)</span>
+            </button>
+
             <button id="btnRegisterLate" type="button" onclick="openLateRegisterModal()" class="bg-orange-600 hover:bg-orange-700 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow transition flex items-center gap-1.5">
               <i class="fa-solid fa-user-clock"></i>
               <span data-i18n="registerLateBtn">Đăng ký về muộn</span>
@@ -280,7 +308,6 @@
           </div>
         </div>
 
-        <!-- Thanh xác nhận nhanh cho giáo viên trực khi sinh viên trở về -->
         <div id="dutyCheckInBar" class="hidden px-4 py-3 bg-emerald-50/70 border-b border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div class="flex items-center gap-2 text-xs text-emerald-900 font-medium">
             <i class="fa-solid fa-id-card-clip text-emerald-600 text-base"></i>
@@ -301,8 +328,9 @@
               <tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase text-slate-500 font-semibold">
                 <th data-i18n="colRoom" class="py-3 px-4">Tòa / Tầng / Phòng</th>
                 <th data-i18n="colStudent" class="py-3 px-4">Họ Tên & Mã SV</th>
-                <th data-i18n="colLateTimeInfo" class="py-3 px-4">Giờ Đăng Ký / Dự Kiến Về</th>
-                <th data-i18n="colLateReason" class="py-3 px-4">Lý Do Về Muộn</th>
+                <th data-i18n="colEntryType" class="py-3 px-4">Loại Đăng Ký</th>
+                <th data-i18n="colLateTimeInfo" class="py-3 px-4">Thời Gian Ra / Dự Kiến Về</th>
+                <th data-i18n="colLateReason" class="py-3 px-4">Lý Do</th>
                 <th data-i18n="colReturnStatus" class="py-3 px-4">Trạng Thái & Giờ Về Thực Tế</th>
                 <th id="colLateActionHeader" data-i18n="colAction" class="py-3 px-4 text-right">Thao Tác</th>
               </tr>
@@ -311,7 +339,7 @@
           </table>
         </div>
         <div id="entryExitEmptyState" class="hidden py-8 text-center text-slate-400 text-xs" data-i18n="entryExitEmptyText">
-          Chưa có lịch sử đăng ký về muộn / ra vào nào trong phạm vi xem.
+          Chưa có lịch sử đăng ký về muộn / ra ngoài nào trong phạm vi xem.
         </div>
       </section>
 
@@ -427,7 +455,102 @@
     </main>
   </div>
 
-  <!-- Modal Đăng Ký Về Muộn (12:00 trưa - trước 22:00 tối) -->
+  <!-- Modal Xác Nhận Gửi Đi & Khóa Điểm Danh Tầng -->
+  <div id="submitFloorModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
+      <div class="flex justify-between items-center border-b pb-3">
+        <h2 data-i18n="submitFloorModalTitle" class="text-lg font-bold text-slate-800">Xác Nhận Gửi Điểm Danh</h2>
+        <button onclick="closeSubmitFloorModal()" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      <div class="space-y-3 text-sm text-slate-700">
+        <p id="submitFloorSummary" class="font-semibold text-indigo-800 bg-indigo-50 px-3.5 py-2.5 rounded-xl border border-indigo-200"></p>
+        <p data-i18n="submitFloorWarning" class="text-xs text-rose-700 bg-rose-50 px-3.5 py-2.5 rounded-xl border border-rose-200 font-medium">
+          Sau khi xác nhận gửi đi, phần điểm danh của tầng này sẽ bị khóa ngay lập tức và không thể tự chỉnh sửa thêm.
+        </p>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button type="button" onclick="closeSubmitFloorModal()" data-i18n="cancelBtn" class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg">Hủy</button>
+        <button type="button" onclick="confirmSubmitFloorAttendance()" data-i18n="confirmSubmitFloorBtn" class="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow flex items-center gap-1.5">
+          <i class="fa-solid fa-paper-plane"></i>
+          <span>Xác nhận gửi & khóa</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Admin Cài Đặt Giờ Giới Nghiêm -->
+  <div id="curfewSettingsModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
+      <div class="flex justify-between items-center border-b pb-3">
+        <div>
+          <h2 data-i18n="curfewSettingsTitle" class="text-lg font-bold text-slate-800">Cài Đặt Giờ Giới Nghiêm (門禁時間設定)</h2>
+          <p data-i18n="curfewSettingsDesc" class="text-xs text-slate-500 mt-0.5">Thiết lập khung giờ giới nghiêm của KTX. Sinh viên chỉ được đăng ký ra ngoài trong khung giờ này.</p>
+        </div>
+        <button onclick="closeCurfewSettingsModal()" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      <form onsubmit="saveCurfewSettings(event)" class="space-y-4">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label data-i18n="lblCurfewStart" class="block text-xs font-semibold text-slate-600 mb-1">Giờ bắt đầu giới nghiêm</label>
+            <input id="curfewStartInput" type="time" required value="22:00" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-semibold" />
+          </div>
+          <div>
+            <label data-i18n="lblCurfewEnd" class="block text-xs font-semibold text-slate-600 mb-1">Giờ kết thúc giới nghiêm</label>
+            <input id="curfewEndInput" type="time" required value="06:00" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-semibold" />
+          </div>
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeCurfewSettingsModal()" data-i18n="cancelBtn" class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg">Hủy</button>
+          <button type="submit" data-i18n="saveCurfewBtn" class="px-4 py-2 text-sm bg-slate-800 hover:bg-slate-900 text-white font-semibold rounded-lg shadow">Lưu giờ giới nghiêm</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Đăng Ký Ra Ngoài Trong Giờ Giới Nghiêm -->
+  <div id="curfewOutModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
+      <div class="flex justify-between items-center border-b pb-3">
+        <div>
+          <h2 data-i18n="curfewOutModalTitle" class="text-lg font-bold text-slate-800">Đăng Ký Ra Ngoài Giờ Giới Nghiêm</h2>
+          <p id="curfewOutModalDesc" class="text-xs text-rose-700 mt-0.5">Sau khi đăng ký, trạng thái điểm danh tự động chuyển sang Về muộn.</p>
+        </div>
+        <button onclick="closeCurfewOutModal()" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      <form onsubmit="submitCurfewOut(event)" class="space-y-3">
+        <div>
+          <label data-i18n="lblSelectStudent" class="block text-xs font-semibold text-slate-600 mb-1">Sinh viên</label>
+          <select id="curfewOutResidentId" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"></select>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label data-i18n="lblOutTime" class="block text-xs font-semibold text-slate-600 mb-1">Thời gian ra ngoài</label>
+            <input id="curfewOutLeaveTime" type="time" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label data-i18n="lblExpectedReturnTime" class="block text-xs font-semibold text-slate-600 mb-1">Thời gian dự kiến về</label>
+            <input id="curfewOutExpectedTime" type="time" required value="23:30" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+          </div>
+        </div>
+        <div>
+          <label data-i18n="lblCurfewOutReason" class="block text-xs font-semibold text-slate-600 mb-1">Lý do ra ngoài trong giờ giới nghiêm</label>
+          <textarea id="curfewOutReasonInput" rows="3" required data-i18n-placeholder="curfewOutReasonPlaceholder" placeholder="VD: Mua thuốc cấp cứu / Có việc khẩn cấp..." class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"></textarea>
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeCurfewOutModal()" data-i18n="cancelBtn" class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg">Hủy</button>
+          <button type="submit" data-i18n="confirmCurfewOutBtn" class="px-4 py-2 text-sm bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-lg shadow">Xác nhận ra ngoài</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Đăng Ký Về Muộn -->
   <div id="lateRegisterModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
       <div class="flex justify-between items-center border-b pb-3">
@@ -445,7 +568,7 @@
           <select id="lateResidentId" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"></select>
         </div>
         <div>
-          <label data-i18n="lblExpectedReturnTime" class="block text-xs font-semibold text-slate-600 mb-1">Giờ dự kiến về KTX</label>
+          <label data-i18n="lblExpectedReturnTime" class="block text-xs font-semibold text-slate-600 mb-1">Thời gian dự kiến về</label>
           <input id="lateExpectedTime" type="time" required value="23:00" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
         </div>
         <div>
@@ -689,12 +812,12 @@
         roleLabel_HOMEROOM_TEACHER: "GV chủ nhiệm ({class})",
         roleLabel_TEACHER: "GV chủ nhiệm ({class})",
         roleLabel_STUDENT: "Sinh viên nội trú",
-        notice_ADMIN: "Quyền Admin: Điểm danh làm mới lúc 20:00 tối (mặc định để trống). Đăng ký về muộn mở từ 12:00 – trước 22:00 và tự khóa ở Về muộn cho tới khi giáo viên trực nhập đúng Mã SV xác nhận.",
-        notice_OFFICER: "Quyền Cán bộ tầng ({building} · {floor}): Điểm danh trong khung 22:30–00:00 (20:00 làm mới danh sách). Các SV đã đăng ký về muộn sẽ bị khóa tự động.",
-        notice_DORM_TEACHER: "Quyền GV quản lý KTX ({buildingScope}): Theo dõi KTX và nhập chính xác Mã SV tại mục Lịch Sử Ra Vào khi sinh viên về muộn trở về KTX để chuyển sang Có mặt.",
+        notice_ADMIN: "Quyền Admin: Điểm danh làm mới lúc 20:00 tối. Bạn có thể tự cài đặt giờ giới nghiêm và mở khóa lại tầng nếu cần.",
+        notice_OFFICER: "Quyền Cán bộ tầng ({building} · {floor}): Điểm danh trong khung 22:30–00:00 (20:00 làm mới). Khi bấm Gửi điểm danh tầng, hệ thống sẽ khóa ngay phần điểm danh của tầng này.",
+        notice_DORM_TEACHER: "Quyền GV quản lý KTX ({buildingScope}): Theo dõi KTX và nhập chính xác Mã SV tại mục Lịch Sử Ra Vào khi sinh viên trở về KTX để chuyển sang Có mặt.",
         notice_HOMEROOM_TEACHER: "Quyền GV chủ nhiệm ({class}): Chỉ hiển thị sinh viên thuộc {class} (chế độ chỉ xem).",
         notice_TEACHER: "Quyền GV chủ nhiệm ({class}): Chỉ hiển thị sinh viên thuộc {class} (chế độ chỉ xem).",
-        notice_STUDENT: "Quyền Sinh viên: Có thể đăng ký về muộn từ 12:00 trưa đến trước 22:00 tối (tự động khóa điểm danh ở Về muộn) hoặc gửi đơn Nghỉ phép ngoài / Báo sửa chữa.",
+        notice_STUDENT: "Quyền Sinh viên: Có thể đăng ký về muộn (12:00 – 22:00) hoặc đăng ký ra ngoài trong giờ giới nghiêm (tự động chuyển trạng thái điểm danh sang Về muộn).",
         welcomePrefix: "Xin chào,",
         logoutBtn: "Đăng xuất",
         appTitle: "Quản Lý Ký Túc Xá",
@@ -718,6 +841,15 @@
         overrideOpenBtn: "Mở tạm ngoài giờ",
         overrideCloseBtn: "Khóa theo giờ chuẩn",
         markAllPresent: "Có mặt tất cả (chưa điểm danh)",
+        submitFloorAttBtn: "Gửi điểm danh tầng",
+        unlockFloorAttBtn: "Mở khóa tầng",
+        floorSubmittedBadgeText: "Đã gửi & khóa tầng ({by} · {at})",
+        submitFloorModalTitle: "Xác Nhận Gửi Điểm Danh",
+        submitFloorSummaryText: "Phiên: {date} · Tòa: {building} · Tầng: {floor}",
+        submitFloorWarning: "Sau khi xác nhận gửi đi, phần điểm danh của tầng này sẽ bị khóa ngay lập tức và không thể tự chỉnh sửa thêm.",
+        confirmSubmitFloorBtn: "Xác nhận gửi & khóa",
+        floorSubmittedSuccess: "Đã gửi và khóa điểm danh cho {building} · {floor} (phiên {date})!",
+        floorUnlockedSuccess: "Đã mở khóa điểm danh cho {building} · {floor} (phiên {date}).",
         exportAttBtn: "Xuất điểm danh ngày",
         searchPlaceholder: "Tìm theo tên, mã SV, số phòng, lớp...",
         allBuildings: "Tất cả tòa nhà",
@@ -740,24 +872,45 @@
         colNote: "Ghi Chú Điểm Danh",
         colAction: "Thao Tác",
         emptyText: "Chưa có dữ liệu phù hợp.",
-        lateSectionTitle: "Mục Đăng Ký Về Muộn & Lịch Sử Ra Vào (晚歸登記與進出紀錄)",
-        lateSectionSubtitle: "SV đăng ký về muộn từ 12:00 – trước 22:00 (tự động khóa sang Về muộn). Khi SV về KTX, giáo viên trực nhập đúng Mã SV để chuyển sang Có mặt.",
+        lateSectionTitle: "Lịch Sử Ra Vào KTX: Đăng Ký Về Muộn & Ra Ngoài Giờ Giới Nghiêm",
+        lateSectionSubtitle: "Đăng ký về muộn (12:00 – 22:00) hoặc ra ngoài trong giờ giới nghiêm tự động chuyển điểm danh sang Về muộn. Khi SV trở về KTX, giáo viên trực nhập đúng Mã SV để chuyển sang Có mặt.",
+        curfewSettingsBtnLabel: "Giờ giới nghiêm: {start} - {end}",
+        curfewWindowOpen: "Đang trong giờ giới nghiêm ({start} - {end})",
+        curfewWindowClosed: "Ngoài giờ giới nghiêm ({start} - {end})",
+        registerCurfewOutBtn: "Đăng ký ra ngoài (giờ giới nghiêm)",
+        curfewSettingsTitle: "Cài Đặt Giờ Giới Nghiêm (門禁時間設定)",
+        curfewSettingsDesc: "Thiết lập khung giờ giới nghiêm của KTX. Sinh viên chỉ được đăng ký ra ngoài trong khung giờ này.",
+        lblCurfewStart: "Giờ bắt đầu giới nghiêm",
+        lblCurfewEnd: "Giờ kết thúc giới nghiêm",
+        saveCurfewBtn: "Lưu giờ giới nghiêm",
+        curfewOutModalTitle: "Đăng Ký Ra Ngoài Giờ Giới Nghiêm",
+        curfewOutModalDesc: "Khung giờ giới nghiêm hiện tại: {start} - {end}. Sau khi đăng ký, trạng thái điểm danh tự động chuyển sang Về muộn.",
+        lblOutTime: "Thời gian ra ngoài",
+        lblCurfewOutReason: "Lý do ra ngoài trong giờ giới nghiêm",
+        curfewOutReasonPlaceholder: "VD: Mua thuốc cấp cứu / Có việc khẩn cấp...",
+        confirmCurfewOutBtn: "Xác nhận ra ngoài",
+        curfewOutClosedAlert: "Chỉ cho phép đăng ký ra ngoài trong khung giờ giới nghiêm ({start} - {end})!",
+        curfewOutSuccess: "Đã đăng ký ra ngoài giờ giới nghiêm cho {name} ({sid})! Trạng thái điểm danh đã chuyển sang Về muộn.",
+        typeCurfewOut: "Ra ngoài giờ giới nghiêm",
+        typeLateReturn: "Đăng ký về muộn",
+        typeDirectCheckIn: "Xác nhận về trực tiếp",
+        colEntryType: "Loại Đăng Ký",
         lateWindowOpen: "Đang mở đăng ký về muộn (12:00 - 22:00)",
         lateWindowClosed: "Ngoài giờ đăng ký về muộn (12:00 - 22:00)",
         registerLateBtn: "Đăng ký về muộn",
         dutyCheckInHint: "Giáo viên trực xác nhận SV trở về KTX (khớp chính xác Mã SV → mở khóa & chuyển Về muộn thành Có mặt):",
         dutyStudentIdPlaceholder: "Nhập chính xác Mã SV...",
         confirmReturnBtn: "Xác nhận đã về",
-        colLateTimeInfo: "Giờ Đăng Ký / Dự Kiến Về",
-        colLateReason: "Lý Do Về Muộn",
+        colLateTimeInfo: "Thời Gian Ra / Dự Kiến Về",
+        colLateReason: "Lý Do",
         colReturnStatus: "Trạng Thái & Giờ Về Thực Tế",
-        entryExitEmptyText: "Chưa có lịch sử đăng ký về muộn / ra vào nào trong phạm vi xem.",
+        entryExitEmptyText: "Chưa có lịch sử đăng ký về muộn / ra ngoài nào trong phạm vi xem.",
         statusPendingReturn: "Chưa về KTX (Đang khóa Về muộn)",
         statusReturnedAt: "Đã về lúc {time} (Đã chuyển Có mặt)",
         confirmReturnInlineBtn: "Xác nhận về",
         lateModalTitle: "Đăng Ký Về Muộn (晚歸登記)",
         lateModalDesc: "Mở đăng ký từ 12:00 trưa đến trước 22:00 tối. Sau khi gửi, điểm danh tự động khóa ở trạng thái Về muộn.",
-        lblExpectedReturnTime: "Giờ dự kiến về KTX",
+        lblExpectedReturnTime: "Thời gian dự kiến về",
         lblLateReason: "Lý do về muộn",
         lateReasonPlaceholder: "VD: Làm thêm ca tối / Học nhóm tại thư viện...",
         confirmLateRegBtn: "Xác nhận đăng ký về muộn",
@@ -871,12 +1024,12 @@
         roleLabel_HOMEROOM_TEACHER: "導師 / 班級老師 ({class})",
         roleLabel_TEACHER: "導師 / 班級老師 ({class})",
         roleLabel_STUDENT: "住宿生",
-        notice_ADMIN: "管理員權限：每晚 20:00 重置點名（預設空白未勾選）。12:00–22:00 開放晚歸登記並自動鎖定為晚歸，待值班老師輸入正確學號確認返宿後轉為出席。",
-        notice_OFFICER: "樓層幹部權限（{building} · {floor}）：每晚 20:00 重置名單，22:30–00:00 進行點名（已登記晚歸者自動鎖定）。",
-        notice_DORM_TEACHER: "宿舍管理老師權限（{buildingScope}）：可檢視宿舍狀態，並於晚歸生返宿時輸入正確學號確認，自動解鎖並轉為出席。",
+        notice_ADMIN: "管理員權限：每晚 20:00 重置點名。可自行設定門禁時段，亦可解鎖已送出之樓層。",
+        notice_OFFICER: "樓層幹部權限（{building} · {floor}）：每晚 20:00 重置名單，22:30–00:00 進行點名。按下「送出樓層點名」確認後，該樓層點名將立即鎖定。",
+        notice_DORM_TEACHER: "宿舍管理老師權限（{buildingScope}）：可檢視宿舍狀態，並於學生返宿時輸入正確學號確認，自動解鎖並轉為出席。",
         notice_HOMEROOM_TEACHER: "導師 / 班級老師權限（{class}）：僅顯示 {class} 住宿生資料（唯讀）。",
         notice_TEACHER: "導師 / 班級老師權限（{class}）：僅顯示 {class} 住宿生資料（唯讀）。",
-        notice_STUDENT: "住宿生權限：可於 12:00 至 22:00 前登記晚歸（送出後自動鎖定點名為晚歸），或提交請假與報修。",
+        notice_STUDENT: "住宿生權限：可登記晚歸（12:00–22:00）或門禁時段外出（送出後點名自動轉為晚歸），並可提交請假與報修。",
         welcomePrefix: "您好，",
         logoutBtn: "登出",
         appTitle: "宿舍管理系統",
@@ -900,6 +1053,15 @@
         overrideOpenBtn: "臨時開啟點名",
         overrideCloseBtn: "恢復 22:30-00:00 鎖定",
         markAllPresent: "未點名名單全體出席",
+        submitFloorAttBtn: "送出樓層點名",
+        unlockFloorAttBtn: "解除樓層鎖定",
+        floorSubmittedBadgeText: "已送出並鎖定（{by} · {at}）",
+        submitFloorModalTitle: "確認送出樓層點名",
+        submitFloorSummaryText: "場次：{date} · 棟別：{building} · 樓層：{floor}",
+        submitFloorWarning: "確認送出後，此樓層的點名將立即鎖定，無法再自行修改。",
+        confirmSubmitFloorBtn: "確認送出並鎖定",
+        floorSubmittedSuccess: "已送出並鎖定 {building} · {floor}（場次 {date}）點名！",
+        floorUnlockedSuccess: "已解除 {building} · {floor}（場次 {date}）點名鎖定。",
         exportAttBtn: "匯出當日點名",
         searchPlaceholder: "搜尋姓名、學號、房號、班級...",
         allBuildings: "全部棟別",
@@ -922,18 +1084,39 @@
         colNote: "點名備註",
         colAction: "操作",
         emptyText: "尚無符合的資料。",
-        lateSectionTitle: "晚歸登記與進出紀錄專區",
-        lateSectionSubtitle: "12:00 至 22:00 前開放學生登記晚歸（送出後自動鎖定點名為晚歸）。學生返宿時由值班老師輸入正確學號確認轉為出席。",
+        lateSectionTitle: "宿舍進出紀錄：晚歸登記與門禁時段外出登記",
+        lateSectionSubtitle: "登記晚歸（12:00–22:00）或門禁時段外出後，點名狀態自動轉為「晚歸」。返宿時由值班老師輸入正確學號確認轉為出席。",
+        curfewSettingsBtnLabel: "門禁時段：{start} - {end}",
+        curfewWindowOpen: "目前為門禁時段（{start} - {end}）",
+        curfewWindowClosed: "非門禁時段（{start} - {end}）",
+        registerCurfewOutBtn: "登記外出（門禁時段）",
+        curfewSettingsTitle: "設定門禁時段 (門禁時間設定)",
+        curfewSettingsDesc: "設定宿舍門禁起訖時間，學生僅可於門禁時段內登記臨時外出。",
+        lblCurfewStart: "門禁開始時間",
+        lblCurfewEnd: "門禁結束時間",
+        saveCurfewBtn: "儲存門禁時間",
+        curfewOutModalTitle: "門禁時段外出登記",
+        curfewOutModalDesc: "目前門禁時段：{start} - {end}。送出後點名狀態將自動轉為「晚歸」並鎖定。",
+        lblOutTime: "外出時間",
+        lblCurfewOutReason: "門禁時段外出事由",
+        curfewOutReasonPlaceholder: "例：急診就醫 / 臨時緊急事務...",
+        confirmCurfewOutBtn: "確認登記外出",
+        curfewOutClosedAlert: "僅限於設定的門禁時段（{start} - {end}）內登記外出！",
+        curfewOutSuccess: "已完成 {name}（{sid}）門禁時段外出登記！點名狀態已自動轉為「晚歸」。",
+        typeCurfewOut: "門禁時段外出",
+        typeLateReturn: "晚歸登記",
+        typeDirectCheckIn: "直接返宿確認",
+        colEntryType: "登記類型",
         lateWindowOpen: "晚歸登記開放中（12:00 - 22:00）",
         lateWindowClosed: "非晚歸登記時段（12:00 - 22:00）",
         registerLateBtn: "登記晚歸",
         dutyCheckInHint: "值班老師確認學生返宿（精準比對學號 → 自動解鎖並將晚歸轉為出席）：",
         dutyStudentIdPlaceholder: "輸入正確學號...",
         confirmReturnBtn: "確認已返宿",
-        colLateTimeInfo: "登記時間 / 預計返宿",
-        colLateReason: "晚歸事由",
+        colLateTimeInfo: "外出/登記時間 · 預計返宿",
+        colLateReason: "事由說明",
         colReturnStatus: "返宿狀態與實際時間",
-        entryExitEmptyText: "目前檢視範圍內尚無晚歸登記或進出紀錄。",
+        entryExitEmptyText: "目前檢視範圍內尚無晚歸登記或門禁外出紀錄。",
         statusPendingReturn: "尚未返宿（點名已鎖定晚歸）",
         statusReturnedAt: "已於 {time} 返宿（已轉為出席）",
         confirmReturnInlineBtn: "確認返宿",
@@ -1062,29 +1245,65 @@
     let hasSelectedFloorStep = false;
 
     const defaultData = [
-      { id: 1, building: "華苑樓", floor: "1F", room: "101-1", name: "趙德原", studentId: "B112001", className: "Lớp A", note: "Hồ sơ đầy đủ" },
-      { id: 2, building: "華苑樓", floor: "2F", room: "205-2", name: "阮文歡", studentId: "B112002", className: "Lớp A", note: "" },
-      { id: 3, building: "志清樓", floor: "3F", room: "304-1", name: "陳小武", studentId: "B112003", className: "Lớp B", note: "" }
+      { id: "res_1", building: "華苑樓", floor: "1F", room: "101-1", name: "趙德原", studentId: "B112001", className: "Lớp A", note: "Hồ sơ đầy đủ" },
+      { id: "res_2", building: "華苑樓", floor: "2F", room: "205-2", name: "阮文歡", studentId: "B112002", className: "Lớp A", note: "" },
+      { id: "res_3", building: "志清樓", floor: "3F", room: "304-1", name: "陳小武", studentId: "B112003", className: "Lớp B", note: "" }
     ];
 
     const defaultLeaveRequests = [
-      { id: 101, residentId: 2, period: "2026/11/20 - 2026/11/22", reason: "Về phép cuối tuần / 週末請假返家" }
+      { id: "lv_101", residentId: "res_2", period: "2026/11/20 - 2026/11/22", reason: "Về phép cuối tuần / 週末請假返家" }
     ];
 
     const defaultRepairRequests = [
-      { id: 201, residentId: 3, item: "Đèn phòng tắm / 浴室燈具", detail: "Đèn nhấp nháy khi bật", done: false }
+      { id: "rp_201", residentId: "res_3", item: "Đèn phòng tắm / 浴室燈具", detail: "Đèn nhấp nháy khi bật", done: false }
     ];
+
+    const defaultCurfewSettings = {
+      start: "22:00",
+      end: "06:00"
+    };
 
     let residents = JSON.parse(localStorage.getItem("dorm_residents_v5")) || defaultData;
     let staffAccounts = JSON.parse(localStorage.getItem("dorm_staff_accounts_v1")) || defaultStaffAccounts;
     let studentPasswords = JSON.parse(localStorage.getItem("dorm_student_passwords_v1")) || {};
     let attendanceRecords = JSON.parse(localStorage.getItem("dorm_attendance_v4")) || {};
+    let submittedFloors = JSON.parse(localStorage.getItem("dorm_submitted_floors_v1")) || {};
     let entryExitLogs = JSON.parse(localStorage.getItem("dorm_entry_exit_v1")) || [];
     let leaveRequests = JSON.parse(localStorage.getItem("dorm_leave_requests_v1")) || defaultLeaveRequests;
     let repairRequests = JSON.parse(localStorage.getItem("dorm_repair_requests_v1")) || defaultRepairRequests;
+    let curfewSettings = JSON.parse(localStorage.getItem("dorm_curfew_settings_v1")) || defaultCurfewSettings;
 
     let isApplyingRemoteData = false;
+    let lastLocalMutationAt = 0;
     let lastTrackedSessionDate = null;
+    let uidCounter = 1;
+
+    function generateUniqueId(prefix = "id") {
+      uidCounter += 1;
+      return `${prefix}_${Date.now()}_${uidCounter}_${Math.random().toString(36).slice(2, 7)}`;
+    }
+
+    function ensureUniqueResidentIds() {
+      if (!Array.isArray(residents)) return false;
+      const seenIds = new Set();
+      let changed = false;
+
+      residents.forEach((r) => {
+        if (!r || typeof r !== "object") return;
+        const currentKey = r.id !== undefined && r.id !== null ? String(r.id) : "";
+        if (!currentKey || seenIds.has(currentKey)) {
+          r.id = generateUniqueId("res");
+          changed = true;
+        }
+        seenIds.add(String(r.id));
+      });
+
+      return changed;
+    }
+
+    if (ensureUniqueResidentIds()) {
+      localStorage.setItem("dorm_residents_v5", JSON.stringify(residents));
+    }
 
     function isHomeroomTeacherRole(role) {
       return role === "HOMEROOM_TEACHER" || role === "TEACHER";
@@ -1122,20 +1341,24 @@
 
     function pushCloudState() {
       if (isApplyingRemoteData) return;
-      setSyncStatus("saving", "Syncing...");
+      const nowTs = Date.now();
+      lastLocalMutationAt = nowTs;
+      setSyncStatus("saving", "Saving...");
       set(dbRef, {
         residents,
         staffAccounts,
         studentPasswords,
         attendanceRecords,
+        submittedFloors,
         entryExitLogs,
         leaveRequests,
         repairRequests,
-        updatedAt: Date.now()
+        curfewSettings,
+        updatedAt: nowTs
       }).then(() => {
         setSyncStatus("ok", "Firebase Live");
       }).catch(() => {
-        setSyncStatus("err", "Sync Error");
+        setSyncStatus("err", "Local Saved (Cloud Err)");
       });
     }
 
@@ -1144,9 +1367,11 @@
       localStorage.setItem("dorm_staff_accounts_v1", JSON.stringify(staffAccounts));
       localStorage.setItem("dorm_student_passwords_v1", JSON.stringify(studentPasswords));
       localStorage.setItem("dorm_attendance_v4", JSON.stringify(attendanceRecords));
+      localStorage.setItem("dorm_submitted_floors_v1", JSON.stringify(submittedFloors));
       localStorage.setItem("dorm_entry_exit_v1", JSON.stringify(entryExitLogs));
       localStorage.setItem("dorm_leave_requests_v1", JSON.stringify(leaveRequests));
       localStorage.setItem("dorm_repair_requests_v1", JSON.stringify(repairRequests));
+      localStorage.setItem("dorm_curfew_settings_v1", JSON.stringify(curfewSettings));
       if (pushToCloud) {
         pushCloudState();
       }
@@ -1164,6 +1389,13 @@
       return localDate.toISOString().split("T")[0];
     }
 
+    function getCurrentHHMM() {
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2, "0");
+      const mm = String(now.getMinutes()).padStart(2, "0");
+      return `${hh}:${mm}`;
+    }
+
     function formatNowTime() {
       const now = new Date();
       const hh = String(now.getHours()).padStart(2, "0");
@@ -1171,6 +1403,31 @@
       const dd = String(now.getDate()).padStart(2, "0");
       const mo = String(now.getMonth() + 1).padStart(2, "0");
       return `${hh}:${mm} (${dd}/${mo})`;
+    }
+
+    function parseHHMMToMinutes(str) {
+      if (!str || !str.includes(":")) return 0;
+      const [h, m] = str.split(":").map(Number);
+      return (isNaN(h) ? 0 : h) * 60 + (isNaN(m) ? 0 : m);
+    }
+
+    function isWithinCurfewWindow() {
+      const now = new Date();
+      const nowMins = now.getHours() * 60 + now.getMinutes();
+      const startMins = parseHHMMToMinutes(curfewSettings.start || "22:00");
+      const endMins = parseHHMMToMinutes(curfewSettings.end || "06:00");
+
+      if (startMins === endMins) return true;
+      if (startMins < endMins) {
+        return nowMins >= startMins && nowMins < endMins;
+      }
+      return nowMins >= startMins || nowMins < endMins;
+    }
+
+    function canRegisterCurfewOutNow() {
+      if (!currentUser) return false;
+      if (currentUser.role === "ADMIN") return true;
+      return isWithinCurfewWindow();
     }
 
     function isWithinLateRegisterWindow() {
@@ -1196,6 +1453,103 @@
       if (currentUser.role === "ADMIN" && adminOverrideAttendanceOpen) return true;
       return isWithinAttendanceWindow();
     }
+
+    function getTargetFloorScope(resident = null) {
+      const dateStr = getSelectedDate();
+      if (resident) {
+        return {
+          dateStr,
+          building: resident.building,
+          floor: (resident.floor || "1F").toUpperCase()
+        };
+      }
+      if (currentUser && currentUser.role === "OFFICER") {
+        return {
+          dateStr,
+          building: currentUser.assignedBuilding,
+          floor: (currentUser.assignedFloor || "1F").toUpperCase()
+        };
+      }
+      const bVal = document.getElementById("filterBuilding").value;
+      const fVal = document.getElementById("filterFloor").value;
+      if (bVal && bVal !== "ALL" && fVal && fVal !== "ALL") {
+        return { dateStr, building: bVal, floor: fVal.toUpperCase() };
+      }
+      return null;
+    }
+
+    function getFloorLockInfo(dateStr, building, floor) {
+      if (!dateStr || !building || !floor) return null;
+      const dayLocks = submittedFloors && submittedFloors[dateStr];
+      if (!dayLocks) return null;
+      const key = `${building}__${floor.toUpperCase()}`;
+      return dayLocks[key] || null;
+    }
+
+    function isFloorSubmittedLocked(resident = null) {
+      const scope = getTargetFloorScope(resident);
+      if (!scope) return false;
+      return Boolean(getFloorLockInfo(scope.dateStr, scope.building, scope.floor));
+    }
+
+    window.openSubmitFloorModal = function() {
+      if (!currentUser || (currentUser.role !== "ADMIN" && currentUser.role !== "OFFICER")) return;
+      const scope = getTargetFloorScope();
+      if (!scope) return;
+      document.getElementById("submitFloorSummary").textContent = t("submitFloorSummaryText")
+        .replace("{date}", scope.dateStr)
+        .replace("{building}", scope.building)
+        .replace("{floor}", scope.floor);
+      document.getElementById("submitFloorModal").classList.remove("hidden");
+      document.getElementById("submitFloorModal").classList.add("flex");
+    };
+
+    window.closeSubmitFloorModal = function() {
+      document.getElementById("submitFloorModal").classList.add("hidden");
+      document.getElementById("submitFloorModal").classList.remove("flex");
+    };
+
+    window.confirmSubmitFloorAttendance = function() {
+      if (!currentUser || (currentUser.role !== "ADMIN" && currentUser.role !== "OFFICER")) return;
+      const scope = getTargetFloorScope();
+      if (!scope) return;
+
+      if (!submittedFloors[scope.dateStr]) {
+        submittedFloors[scope.dateStr] = {};
+      }
+      const key = `${scope.building}__${scope.floor}`;
+      submittedFloors[scope.dateStr][key] = {
+        submittedBy: currentUser.displayName || currentUser.username,
+        submittedAt: formatNowTime()
+      };
+
+      persistAllState(true);
+      window.closeSubmitFloorModal();
+      renderTable();
+      alert(
+        t("floorSubmittedSuccess")
+          .replace("{building}", scope.building)
+          .replace("{floor}", scope.floor)
+          .replace("{date}", scope.dateStr)
+      );
+    };
+
+    window.unlockCurrentFloorAttendance = function() {
+      if (!currentUser || currentUser.role !== "ADMIN") return;
+      const scope = getTargetFloorScope();
+      if (!scope) return;
+      if (submittedFloors[scope.dateStr]) {
+        delete submittedFloors[scope.dateStr][`${scope.building}__${scope.floor}`];
+      }
+      persistAllState(true);
+      renderTable();
+      alert(
+        t("floorUnlockedSuccess")
+          .replace("{building}", scope.building)
+          .replace("{floor}", scope.floor)
+          .replace("{date}", scope.dateStr)
+      );
+    };
 
     function getAllFloorsList() {
       const extra = residents
@@ -1244,15 +1598,46 @@
       const badge = document.getElementById("attendanceWindowBadge");
       const overrideBtn = document.getElementById("btnAdminOverrideWindow");
       const overrideText = document.getElementById("overrideWindowBtnText");
+      const submitFloorBtn = document.getElementById("btnSubmitFloorAttendance");
+      const unlockFloorBtn = document.getElementById("btnUnlockFloorAttendance");
+      const floorLockBadge = document.getElementById("floorSubmittedBadge");
 
       const inWindow = isWithinAttendanceWindow();
       const effectiveOpen = canActAttendanceNow();
+      const scope = getTargetFloorScope();
+      const lockInfo = scope ? getFloorLockInfo(scope.dateStr, scope.building, scope.floor) : null;
+      const isLockedFloor = Boolean(lockInfo);
+      const canMarkRole = currentUser && (currentUser.role === "ADMIN" || currentUser.role === "OFFICER");
 
       if (currentUser && currentUser.role === "ADMIN") {
         overrideBtn.classList.remove("hidden");
         overrideText.textContent = adminOverrideAttendanceOpen ? t("overrideCloseBtn") : t("overrideOpenBtn");
       } else {
         overrideBtn.classList.add("hidden");
+      }
+
+      if (canMarkRole && scope) {
+        submitFloorBtn.classList.toggle("hidden", isLockedFloor);
+        submitFloorBtn.disabled = !effectiveOpen || isLockedFloor;
+        submitFloorBtn.classList.toggle("opacity-50", !effectiveOpen || isLockedFloor);
+        submitFloorBtn.classList.toggle("cursor-not-allowed", !effectiveOpen || isLockedFloor);
+      } else {
+        submitFloorBtn.classList.add("hidden");
+      }
+
+      if (currentUser && currentUser.role === "ADMIN" && scope && isLockedFloor) {
+        unlockFloorBtn.classList.remove("hidden");
+      } else {
+        unlockFloorBtn.classList.add("hidden");
+      }
+
+      if (lockInfo) {
+        floorLockBadge.classList.remove("hidden");
+        floorLockBadge.textContent = t("floorSubmittedBadgeText")
+          .replace("{by}", lockInfo.submittedBy || "Staff")
+          .replace("{at}", lockInfo.submittedAt || "");
+      } else {
+        floorLockBadge.classList.add("hidden");
       }
 
       if (inWindow) {
@@ -1267,9 +1652,41 @@
       }
 
       const markAllBtn = document.getElementById("btnMarkAllPresent");
-      markAllBtn.disabled = !effectiveOpen;
-      markAllBtn.classList.toggle("opacity-50", !effectiveOpen);
-      markAllBtn.classList.toggle("cursor-not-allowed", !effectiveOpen);
+      const canBulkMark = effectiveOpen && !isLockedFloor;
+      markAllBtn.disabled = !canBulkMark;
+      markAllBtn.classList.toggle("opacity-50", !canBulkMark);
+      markAllBtn.classList.toggle("cursor-not-allowed", !canBulkMark);
+
+      const cStart = curfewSettings.start || "22:00";
+      const cEnd = curfewSettings.end || "06:00";
+      const curfewSettingsBtn = document.getElementById("btnCurfewSettings");
+      const curfewSettingsBtnText = document.getElementById("curfewSettingsBtnText");
+      if (currentUser && currentUser.role === "ADMIN") {
+        curfewSettingsBtn.classList.remove("hidden");
+        curfewSettingsBtnText.textContent = t("curfewSettingsBtnLabel")
+          .replace("{start}", cStart)
+          .replace("{end}", cEnd);
+      } else {
+        curfewSettingsBtn.classList.add("hidden");
+      }
+
+      const curfewBadge = document.getElementById("curfewWindowBadge");
+      const curfewOutBtn = document.getElementById("btnRegisterCurfewOut");
+      const inCurfew = isWithinCurfewWindow();
+      const canCurfewOut = canRegisterCurfewOutNow();
+
+      if (inCurfew) {
+        curfewBadge.textContent = t("curfewWindowOpen").replace("{start}", cStart).replace("{end}", cEnd);
+        curfewBadge.className = "text-xs font-semibold px-2.5 py-1 rounded-full bg-rose-100 text-rose-800";
+      } else {
+        curfewBadge.textContent = t("curfewWindowClosed").replace("{start}", cStart).replace("{end}", cEnd);
+        curfewBadge.className = "text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-200 text-slate-600";
+      }
+      if (curfewOutBtn) {
+        curfewOutBtn.disabled = !canCurfewOut;
+        curfewOutBtn.classList.toggle("opacity-50", !canCurfewOut);
+        curfewOutBtn.classList.toggle("cursor-not-allowed", !canCurfewOut);
+      }
 
       const lateBadge = document.getElementById("lateRegWindowBadge");
       const lateBtn = document.getElementById("btnRegisterLate");
@@ -1570,8 +1987,135 @@
       document.getElementById("dutyCheckInBar").classList.toggle("hidden", !canConfirmStudentReturn());
       document.getElementById("colLateActionHeader").classList.toggle("hidden", !canConfirmStudentReturn());
 
+      const canRegisterAnyEntry = isAdmin || isOfficer || isStudent;
+      document.getElementById("btnRegisterCurfewOut").classList.toggle("hidden", !canRegisterAnyEntry);
+      document.getElementById("btnRegisterLate").classList.toggle("hidden", !canRegisterAnyEntry);
+
       renderTable();
     }
+
+    window.openCurfewSettingsModal = function() {
+      if (!currentUser || currentUser.role !== "ADMIN") return;
+      document.getElementById("curfewStartInput").value = curfewSettings.start || "22:00";
+      document.getElementById("curfewEndInput").value = curfewSettings.end || "06:00";
+      document.getElementById("curfewSettingsModal").classList.remove("hidden");
+      document.getElementById("curfewSettingsModal").classList.add("flex");
+    };
+
+    window.closeCurfewSettingsModal = function() {
+      document.getElementById("curfewSettingsModal").classList.add("hidden");
+      document.getElementById("curfewSettingsModal").classList.remove("flex");
+    };
+
+    window.saveCurfewSettings = function(e) {
+      e.preventDefault();
+      if (!currentUser || currentUser.role !== "ADMIN") return;
+      curfewSettings = {
+        start: document.getElementById("curfewStartInput").value || "22:00",
+        end: document.getElementById("curfewEndInput").value || "06:00"
+      };
+      persistAllState(true);
+      window.closeCurfewSettingsModal();
+      renderTable();
+    };
+
+    window.openCurfewOutModal = function() {
+      const cStart = curfewSettings.start || "22:00";
+      const cEnd = curfewSettings.end || "06:00";
+      if (!canRegisterCurfewOutNow()) {
+        alert(
+          t("curfewOutClosedAlert")
+            .replace("{start}", cStart)
+            .replace("{end}", cEnd)
+        );
+        return;
+      }
+
+      const scoped = getScopedResidents();
+      if (scoped.length === 0) return;
+
+      document.getElementById("curfewOutModalDesc").textContent = t("curfewOutModalDesc")
+        .replace("{start}", cStart)
+        .replace("{end}", cEnd);
+
+      const selectEl = document.getElementById("curfewOutResidentId");
+      selectEl.innerHTML = scoped.map(r =>
+        `<option value="${String(r.id)}">${r.name} (${r.studentId}) - ${r.building} ${r.floor} ${r.room}</option>`
+      ).join("");
+
+      document.getElementById("curfewOutLeaveTime").value = getCurrentHHMM();
+      document.getElementById("curfewOutExpectedTime").value = "23:30";
+      document.getElementById("curfewOutReasonInput").value = "";
+      document.getElementById("curfewOutModal").classList.remove("hidden");
+      document.getElementById("curfewOutModal").classList.add("flex");
+    };
+
+    window.closeCurfewOutModal = function() {
+      document.getElementById("curfewOutModal").classList.add("hidden");
+      document.getElementById("curfewOutModal").classList.remove("flex");
+    };
+
+    window.submitCurfewOut = function(e) {
+      e.preventDefault();
+      const cStart = curfewSettings.start || "22:00";
+      const cEnd = curfewSettings.end || "06:00";
+      if (!canRegisterCurfewOutNow()) {
+        alert(
+          t("curfewOutClosedAlert")
+            .replace("{start}", cStart)
+            .replace("{end}", cEnd)
+        );
+        return;
+      }
+
+      const residentId = String(document.getElementById("curfewOutResidentId").value);
+      const resident = residents.find(r => String(r.id) === residentId);
+      if (!resident) return;
+
+      const leaveTime = document.getElementById("curfewOutLeaveTime").value || getCurrentHHMM();
+      const expectedTime = document.getElementById("curfewOutExpectedTime").value || "23:30";
+      const reason = document.getElementById("curfewOutReasonInput").value.trim();
+      const sessionDate = getActiveAttendanceSessionDate();
+
+      if (!attendanceRecords[sessionDate]) {
+        attendanceRecords[sessionDate] = {};
+      }
+      attendanceRecords[sessionDate][residentId] = "LATE";
+
+      const existingIdx = entryExitLogs.findIndex(
+        log => String(log.residentId) === residentId && log.sessionDate === sessionDate && !log.returnedAt
+      );
+      const logRecord = {
+        id: generateUniqueId("log"),
+        entryType: "CURFEW_OUT",
+        residentId,
+        studentId: (resident.studentId || "").trim(),
+        studentName: resident.name || "",
+        sessionDate,
+        registeredAt: `${leaveTime} (${formatNowTime().split(" ")[1] || ""})`.trim(),
+        leaveTime,
+        expectedTime,
+        reason,
+        returnedAt: null,
+        confirmedBy: null
+      };
+
+      if (existingIdx !== -1) {
+        entryExitLogs[existingIdx] = logRecord;
+      } else {
+        entryExitLogs.unshift(logRecord);
+      }
+
+      document.getElementById("attendanceDate").value = sessionDate;
+      persistAllState(true);
+      window.closeCurfewOutModal();
+      renderTable();
+      alert(
+        t("curfewOutSuccess")
+          .replace("{name}", resident.name || "")
+          .replace("{sid}", resident.studentId || "")
+      );
+    };
 
     window.openChangePasswordModal = function() {
       document.getElementById("oldPasswordInput").value = "";
@@ -1805,6 +2349,9 @@
         const presentFloor = floorStudents.filter(r => getAttendanceStatus(r) === "PRESENT").length;
         const absentFloor = floorStudents.filter(r => getAttendanceStatus(r) === "ABSENT").length;
         const lateFloor = floorStudents.filter(r => getAttendanceStatus(r) === "LATE").length;
+        const lockedBadge = getFloorLockInfo(getSelectedDate(), off.assignedBuilding, off.assignedFloor)
+          ? `<span class="px-2 py-0.5 rounded-full bg-violet-100 text-violet-800"><i class="fa-solid fa-lock mr-1"></i>Đã gửi & khóa</span>`
+          : "";
 
         return `
           <tr class="hover:bg-indigo-50/30 transition">
@@ -1818,6 +2365,7 @@
             </td>
             <td class="py-3 px-4">
               <div class="flex flex-wrap gap-1.5 text-xs font-semibold">
+                ${lockedBadge}
                 <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">${t("statTotal")}: ${totalFloor}</span>
                 <span class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">${t("attUnmarked")}: ${unmarkedFloor}</span>
                 <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">${t("attPresent")}: ${presentFloor}</span>
@@ -1857,12 +2405,13 @@
     }
 
     function isResidentLateLocked(resident, dateStr = getSelectedDate()) {
+      const rKey = String(resident.id);
       const dayMap = attendanceRecords && attendanceRecords[dateStr];
-      if (dayMap && dayMap[resident.id] === "LATE") {
+      if (dayMap && dayMap[rKey] === "LATE") {
         return true;
       }
       return (entryExitLogs || []).some(log =>
-        log.residentId === resident.id &&
+        String(log.residentId) === rKey &&
         log.sessionDate === dateStr &&
         !log.returnedAt
       );
@@ -1870,12 +2419,13 @@
 
     function getAttendanceStatus(resident) {
       const dateStr = getSelectedDate();
+      const rKey = String(resident.id);
       if (isResidentLateLocked(resident, dateStr)) {
         return "LATE";
       }
       const dayMap = attendanceRecords && attendanceRecords[dateStr];
-      if (dayMap && dayMap[resident.id]) {
-        return dayMap[resident.id];
+      if (dayMap && dayMap[rKey]) {
+        return dayMap[rKey];
       }
       return "UNMARKED";
     }
@@ -1883,6 +2433,7 @@
     function canModifyResident(resident) {
       if (!currentUser || !canActAttendanceNow()) return false;
       if (isResidentLateLocked(resident)) return false;
+      if (isFloorSubmittedLocked(resident)) return false;
       if (currentUser.role === "ADMIN") return true;
       if (currentUser.role === "OFFICER") {
         return resident.building === currentUser.assignedBuilding && resident.floor === currentUser.assignedFloor;
@@ -1891,16 +2442,17 @@
     }
 
     window.setAttendanceStatus = function(residentId, attStatus) {
-      const resident = residents.find(r => r.id === residentId);
+      const targetKey = String(residentId);
+      const resident = residents.find(r => String(r.id) === targetKey);
       if (!resident || !canModifyResident(resident)) return;
       const dateStr = getSelectedDate();
       if (!attendanceRecords[dateStr]) {
         attendanceRecords[dateStr] = {};
       }
-      if (attendanceRecords[dateStr][residentId] === attStatus) {
-        delete attendanceRecords[dateStr][residentId];
+      if (attendanceRecords[dateStr][targetKey] === attStatus) {
+        delete attendanceRecords[dateStr][targetKey];
       } else {
-        attendanceRecords[dateStr][residentId] = attStatus;
+        attendanceRecords[dateStr][targetKey] = attStatus;
       }
       persistAllState(true);
       renderTable();
@@ -1918,13 +2470,12 @@
         attendanceRecords[dateStr] = {};
       }
       targets.forEach(r => {
-        attendanceRecords[dateStr][r.id] = attStatus;
+        attendanceRecords[dateStr][String(r.id)] = attStatus;
       });
       persistAllState(true);
       renderTable();
     };
 
-    // ================= ĐĂNG KÝ VỀ MUỘN & XÁC NHẬN VỀ KTX =================
     window.openLateRegisterModal = function() {
       if (!canRegisterLateNow()) {
         alert(t("lateRegClosedAlert"));
@@ -1935,7 +2486,7 @@
 
       const selectEl = document.getElementById("lateResidentId");
       selectEl.innerHTML = scoped.map(r =>
-        `<option value="${r.id}">${r.name} (${r.studentId}) - ${r.building} ${r.floor} ${r.room}</option>`
+        `<option value="${String(r.id)}">${r.name} (${r.studentId}) - ${r.building} ${r.floor} ${r.room}</option>`
       ).join("");
 
       document.getElementById("lateExpectedTime").value = "23:00";
@@ -1955,8 +2506,8 @@
         alert(t("lateRegClosedAlert"));
         return;
       }
-      const residentId = Number(document.getElementById("lateResidentId").value);
-      const resident = residents.find(r => r.id === residentId);
+      const residentId = String(document.getElementById("lateResidentId").value);
+      const resident = residents.find(r => String(r.id) === residentId);
       if (!resident) return;
 
       const expectedTime = document.getElementById("lateExpectedTime").value || "23:00";
@@ -1969,10 +2520,11 @@
       attendanceRecords[sessionDate][residentId] = "LATE";
 
       const existingIdx = entryExitLogs.findIndex(
-        log => log.residentId === residentId && log.sessionDate === sessionDate && !log.returnedAt
+        log => String(log.residentId) === residentId && log.sessionDate === sessionDate && !log.returnedAt
       );
       const logRecord = {
-        id: Date.now(),
+        id: generateUniqueId("log"),
+        entryType: "LATE_RETURN",
         residentId,
         studentId: (resident.studentId || "").trim(),
         studentName: resident.name || "",
@@ -2002,13 +2554,14 @@
     };
 
     function markStudentReturnedById(residentId, matchedSidText) {
-      const resident = residents.find(r => r.id === residentId);
+      const rKey = String(residentId);
+      const resident = residents.find(r => String(r.id) === rKey);
       if (!resident) return false;
 
       const activeSession = getActiveAttendanceSessionDate();
       const returnedTime = formatNowTime();
       const pendingLogs = entryExitLogs.filter(
-        log => log.residentId === residentId && !log.returnedAt
+        log => String(log.residentId) === rKey && !log.returnedAt
       );
 
       if (pendingLogs.length > 0) {
@@ -2018,22 +2571,23 @@
           if (!attendanceRecords[log.sessionDate]) {
             attendanceRecords[log.sessionDate] = {};
           }
-          attendanceRecords[log.sessionDate][residentId] = "PRESENT";
+          attendanceRecords[log.sessionDate][rKey] = "PRESENT";
         });
       } else {
         if (!attendanceRecords[activeSession]) {
           attendanceRecords[activeSession] = {};
         }
-        attendanceRecords[activeSession][residentId] = "PRESENT";
+        attendanceRecords[activeSession][rKey] = "PRESENT";
         entryExitLogs.unshift({
-          id: Date.now(),
-          residentId,
+          id: generateUniqueId("log"),
+          entryType: "DIRECT_CHECKIN",
+          residentId: rKey,
           studentId: (resident.studentId || "").trim(),
           studentName: resident.name || "",
           sessionDate: activeSession,
           registeredAt: "-",
           expectedTime: "-",
-          reason: "Xác nhận về trực tiếp / 直接返宿登記",
+          reason: t("typeDirectCheckIn"),
           returnedAt: returnedTime,
           confirmedBy: currentUser ? currentUser.displayName : "Staff"
         });
@@ -2073,13 +2627,13 @@
 
     window.confirmReturnFromLog = function(residentId) {
       if (!canConfirmStudentReturn()) return;
-      const resident = residents.find(r => r.id === residentId);
+      const resident = residents.find(r => String(r.id) === String(residentId));
       markStudentReturnedById(residentId, resident ? resident.studentId : "");
     };
 
     window.deleteEntryExitLog = function(logId) {
       if (!currentUser || currentUser.role !== "ADMIN") return;
-      entryExitLogs = entryExitLogs.filter(item => item.id !== logId);
+      entryExitLogs = entryExitLogs.filter(item => String(item.id) !== String(logId));
       persistAllState(true);
       renderTable();
     };
@@ -2130,20 +2684,23 @@
     function getAttendanceCellHTML(resident) {
       const current = getAttendanceStatus(resident);
       const lockedLate = isResidentLateLocked(resident);
+      const lockedFloor = isFloorSubmittedLocked(resident);
       const canEdit = canModifyResident(resident);
+      const safeId = String(resident.id).replace(/'/g, "\\'");
 
       if (lockedLate || current === "LATE") {
         return `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-800 border border-orange-300 inline-flex items-center gap-1"><i class="fa-solid fa-lock text-[11px]"></i>${t("attLateLocked")}</span>`;
       }
 
       if (!canEdit) {
+        const lockPrefix = lockedFloor ? `<i class="fa-solid fa-lock text-[11px] mr-1"></i>` : "";
         if (current === "PRESENT") {
-          return `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700"><i class="fa-solid fa-check mr-1"></i>${t("attPresent")}</span>`;
+          return `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 inline-flex items-center">${lockPrefix}${t("attPresent")}</span>`;
         }
         if (current === "ABSENT") {
-          return `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-700"><i class="fa-solid fa-xmark mr-1"></i>${t("attAbsent")}</span>`;
+          return `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-700 inline-flex items-center">${lockPrefix}${t("attAbsent")}</span>`;
         }
-        return `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-500 border border-slate-200"><i class="fa-regular fa-circle mr-1"></i>${t("attUnmarked")}</span>`;
+        return `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-500 border border-slate-200 inline-flex items-center">${lockPrefix}${t("attUnmarked")}</span>`;
       }
 
       const presentCls = current === "PRESENT"
@@ -2155,10 +2712,10 @@
 
       return `
         <div class="inline-flex flex-wrap items-center gap-1.5">
-          <button type="button" onclick="setAttendanceStatus(${resident.id}, 'PRESENT')" class="px-2.5 py-1 rounded-lg text-xs font-semibold transition ${presentCls}">
+          <button type="button" onclick="setAttendanceStatus('${safeId}', 'PRESENT')" class="px-2.5 py-1 rounded-lg text-xs font-semibold transition ${presentCls}">
             <i class="fa-solid fa-check mr-1"></i>${t("attPresent")}
           </button>
-          <button type="button" onclick="setAttendanceStatus(${resident.id}, 'ABSENT')" class="px-2.5 py-1 rounded-lg text-xs font-semibold transition ${absentCls}">
+          <button type="button" onclick="setAttendanceStatus('${safeId}', 'ABSENT')" class="px-2.5 py-1 rounded-lg text-xs font-semibold transition ${absentCls}">
             <i class="fa-solid fa-xmark mr-1"></i>${t("attAbsent")}
           </button>
           ${current === "UNMARKED" ? `<span class="text-[11px] text-slate-400 ml-1">${t("attUnmarked")}</span>` : ""}
@@ -2216,8 +2773,8 @@
     }
 
     function renderEntryExitSection(scopedResidents) {
-      const scopedIds = new Set(scopedResidents.map(r => r.id));
-      const visibleLogs = (entryExitLogs || []).filter(item => scopedIds.has(item.residentId));
+      const scopedIds = new Set(scopedResidents.map(r => String(r.id)));
+      const visibleLogs = (entryExitLogs || []).filter(item => scopedIds.has(String(item.residentId)));
       const tbody = document.getElementById("entryExitTableBody");
       const emptyEl = document.getElementById("entryExitEmptyState");
       const canConfirm = canConfirmStudentReturn();
@@ -2231,9 +2788,21 @@
 
       emptyEl.classList.add("hidden");
       tbody.innerHTML = visibleLogs.map(log => {
-        const res = residents.find(r => r.id === log.residentId);
+        const res = residents.find(r => String(r.id) === String(log.residentId));
         if (!res) return "";
+        const safeResId = String(res.id).replace(/'/g, "\\'");
+        const safeLogId = String(log.id).replace(/'/g, "\\'");
 
+        let typeBadgeHTML = "";
+        if (log.entryType === "CURFEW_OUT") {
+          typeBadgeHTML = `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-800 border border-rose-200 inline-flex items-center gap-1"><i class="fa-solid fa-door-open text-[11px]"></i>${t("typeCurfewOut")}</span>`;
+        } else if (log.entryType === "DIRECT_CHECKIN") {
+          typeBadgeHTML = `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-sky-100 text-sky-800 inline-flex items-center gap-1"><i class="fa-solid fa-user-check text-[11px]"></i>${t("typeDirectCheckIn")}</span>`;
+        } else {
+          typeBadgeHTML = `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-800 border border-orange-200 inline-flex items-center gap-1"><i class="fa-solid fa-user-clock text-[11px]"></i>${t("typeLateReturn")}</span>`;
+        }
+
+        const timeLabelPrefix = log.entryType === "CURFEW_OUT" ? "Ra ngoài" : "ĐK";
         const statusHTML = log.returnedAt
           ? `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 inline-flex items-center gap-1"><i class="fa-solid fa-circle-check"></i>${t("statusReturnedAt").replace("{time}", log.returnedAt)}</span>`
           : `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-800 inline-flex items-center gap-1"><i class="fa-solid fa-lock"></i>${t("statusPendingReturn")}</span>`;
@@ -2242,8 +2811,8 @@
         if (canConfirm) {
           actionCell = `
             <td class="py-3 px-4 text-right space-x-1.5">
-              ${!log.returnedAt ? `<button type="button" onclick="confirmReturnFromLog(${res.id})" class="text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-lg shadow-sm transition">${t("confirmReturnInlineBtn")}</button>` : ""}
-              ${isAdmin ? `<button type="button" onclick="deleteEntryExitLog(${log.id})" class="text-rose-500 hover:text-rose-700 p-1.5 rounded hover:bg-rose-50" title="${t("deleteTitle")}"><i class="fa-solid fa-trash"></i></button>` : ""}
+              ${!log.returnedAt ? `<button type="button" onclick="confirmReturnFromLog('${safeResId}')" class="text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-lg shadow-sm transition">${t("confirmReturnInlineBtn")}</button>` : ""}
+              ${isAdmin ? `<button type="button" onclick="deleteEntryExitLog('${safeLogId}')" class="text-rose-500 hover:text-rose-700 p-1.5 rounded hover:bg-rose-50" title="${t("deleteTitle")}"><i class="fa-solid fa-trash"></i></button>` : ""}
             </td>
           `;
         }
@@ -2258,9 +2827,10 @@
               <div class="font-semibold text-slate-800">${res.name}</div>
               <div class="text-xs font-mono text-indigo-600">${res.studentId} · ${res.className}</div>
             </td>
+            <td class="py-3 px-4">${typeBadgeHTML}</td>
             <td class="py-3 px-4 text-xs">
-              <div class="font-semibold text-slate-700">ĐK: ${log.registeredAt || "-"}</div>
-              <div class="text-orange-700 font-medium">Dự kiến: ${log.expectedTime || "-"} (${log.sessionDate})</div>
+              <div class="font-semibold text-slate-700">${timeLabelPrefix}: ${log.registeredAt || "-"}</div>
+              <div class="text-orange-700 font-medium">Dự kiến về: ${log.expectedTime || "-"} (${log.sessionDate})</div>
             </td>
             <td class="py-3 px-4 text-slate-600">${log.reason || "-"}</td>
             <td class="py-3 px-4">${statusHTML}</td>
@@ -2271,9 +2841,9 @@
     }
 
     function renderDedicatedSections(scopedResidents) {
-      const scopedIds = new Set(scopedResidents.map(r => r.id));
+      const scopedIds = new Set(scopedResidents.map(r => String(r.id)));
 
-      const visibleLeaves = (leaveRequests || []).filter(item => scopedIds.has(item.residentId));
+      const visibleLeaves = (leaveRequests || []).filter(item => scopedIds.has(String(item.residentId)));
       document.getElementById("leaveCountBadge").textContent = visibleLeaves.length;
       const leaveBody = document.getElementById("leaveTableBody");
       const leaveEmpty = document.getElementById("leaveEmptyState");
@@ -2284,8 +2854,9 @@
       } else {
         leaveEmpty.classList.add("hidden");
         leaveBody.innerHTML = visibleLeaves.map(req => {
-          const res = residents.find(r => r.id === req.residentId);
+          const res = residents.find(r => String(r.id) === String(req.residentId));
           if (!res) return "";
+          const safeReqId = String(req.id).replace(/'/g, "\\'");
           const canAct = (currentUser && (currentUser.role === "ADMIN" || currentUser.role === "STUDENT")) ||
             (currentUser && currentUser.role === "OFFICER" && res.building === currentUser.assignedBuilding && res.floor === currentUser.assignedFloor);
           return `
@@ -2301,14 +2872,14 @@
               <td class="py-3 px-4 font-medium text-amber-800">${req.period}</td>
               <td class="py-3 px-4 text-slate-600">${req.reason}</td>
               <td class="py-3 px-4 text-right">
-                ${canAct ? `<button onclick="deleteLeaveRequest(${req.id})" class="text-rose-500 hover:text-rose-700 p-1.5 rounded hover:bg-rose-50" title="${t("deleteTitle")}"><i class="fa-solid fa-trash"></i></button>` : "-"}
+                ${canAct ? `<button onclick="deleteLeaveRequest('${safeReqId}')" class="text-rose-500 hover:text-rose-700 p-1.5 rounded hover:bg-rose-50" title="${t("deleteTitle")}"><i class="fa-solid fa-trash"></i></button>` : "-"}
               </td>
             </tr>
           `;
         }).join("");
       }
 
-      const visibleRepairs = (repairRequests || []).filter(item => scopedIds.has(item.residentId));
+      const visibleRepairs = (repairRequests || []).filter(item => scopedIds.has(String(item.residentId)));
       document.getElementById("repairCountBadge").textContent = visibleRepairs.length;
       const repairBody = document.getElementById("repairTableBody");
       const repairEmpty = document.getElementById("repairEmptyState");
@@ -2319,8 +2890,9 @@
       } else {
         repairEmpty.classList.add("hidden");
         repairBody.innerHTML = visibleRepairs.map(req => {
-          const res = residents.find(r => r.id === req.residentId);
+          const res = residents.find(r => String(r.id) === String(req.residentId));
           if (!res) return "";
+          const safeReqId = String(req.id).replace(/'/g, "\\'");
           const canAct = (currentUser && (currentUser.role === "ADMIN" || currentUser.role === "STUDENT")) ||
             (currentUser && currentUser.role === "OFFICER" && res.building === currentUser.assignedBuilding && res.floor === currentUser.assignedFloor);
           const statusBadge = req.done
@@ -2343,8 +2915,8 @@
               </td>
               <td class="py-3 px-4">${statusBadge}</td>
               <td class="py-3 px-4 text-right space-x-1.5">
-                ${canAct && !req.done ? `<button onclick="toggleRepairDone(${req.id})" class="text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-lg transition">${t("markDoneBtn")}</button>` : ""}
-                ${canAct ? `<button onclick="deleteRepairRequest(${req.id})" class="text-rose-500 hover:text-rose-700 p-1.5 rounded hover:bg-rose-50" title="${t("deleteTitle")}"><i class="fa-solid fa-trash"></i></button>` : ""}
+                ${canAct && !req.done ? `<button onclick="toggleRepairDone('${safeReqId}')" class="text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-lg transition">${t("markDoneBtn")}</button>` : ""}
+                ${canAct ? `<button onclick="deleteRepairRequest('${safeReqId}')" class="text-rose-500 hover:text-rose-700 p-1.5 rounded hover:bg-rose-50" title="${t("deleteTitle")}"><i class="fa-solid fa-trash"></i></button>` : ""}
               </td>
             </tr>
           `;
@@ -2404,15 +2976,16 @@
           const isOfficer = currentUser.role === "OFFICER";
 
           tbody.innerHTML = filtered.map(item => {
+            const safeItemId = String(item.id).replace(/'/g, "\\'");
             const canMod = isAdmin || (isOfficer && item.building === currentUser.assignedBuilding && item.floor === currentUser.assignedFloor);
             let actionCell = "";
             if (isAdmin) {
               actionCell = `
                 <td class="py-3.5 px-4 text-right space-x-2">
-                  <button onclick="editStudent(${item.id})" class="text-indigo-600 hover:text-indigo-800 p-1.5 rounded hover:bg-indigo-50" title="${t("editTitle")}">
+                  <button onclick="editStudent('${safeItemId}')" class="text-indigo-600 hover:text-indigo-800 p-1.5 rounded hover:bg-indigo-50" title="${t("editTitle")}">
                     <i class="fa-solid fa-pen-to-square"></i>
                   </button>
-                  <button onclick="deleteStudent(${item.id})" class="text-rose-500 hover:text-rose-700 p-1.5 rounded hover:bg-rose-50" title="${t("deleteTitle")}">
+                  <button onclick="deleteStudent('${safeItemId}')" class="text-rose-500 hover:text-rose-700 p-1.5 rounded hover:bg-rose-50" title="${t("deleteTitle")}">
                     <i class="fa-solid fa-trash"></i>
                   </button>
                 </td>
@@ -2420,7 +2993,7 @@
             } else if (isOfficer && canMod) {
               actionCell = `
                 <td class="py-3.5 px-4 text-right">
-                  <button onclick="editStudent(${item.id})" class="text-indigo-600 hover:text-indigo-800 p-1.5 rounded hover:bg-indigo-50" title="${t("editTitle")}">
+                  <button onclick="editStudent('${safeItemId}')" class="text-indigo-600 hover:text-indigo-800 p-1.5 rounded hover:bg-indigo-50" title="${t("editTitle")}">
                     <i class="fa-solid fa-pen-to-square"></i>
                   </button>
                 </td>
@@ -2458,7 +3031,7 @@
       document.getElementById("reqType").value = type;
       const selectEl = document.getElementById("reqResidentId");
       selectEl.innerHTML = scoped.map(r =>
-        `<option value="${r.id}">${r.name} (${r.studentId}) - ${r.building} ${r.floor} ${r.room}</option>`
+        `<option value="${String(r.id)}">${r.name} (${r.studentId}) - ${r.building} ${r.floor} ${r.room}</option>`
       ).join("");
 
       const metaInput = document.getElementById("reqMeta");
@@ -2492,14 +3065,14 @@
     window.submitDedicatedRequest = function(e) {
       e.preventDefault();
       const type = document.getElementById("reqType").value;
-      const residentId = Number(document.getElementById("reqResidentId").value);
+      const residentId = String(document.getElementById("reqResidentId").value);
       const meta = document.getElementById("reqMeta").value.trim();
       const detail = document.getElementById("reqDetail").value.trim();
 
       if (type === "LEAVE") {
-        leaveRequests.unshift({ id: Date.now(), residentId, period: meta, reason: detail });
+        leaveRequests.unshift({ id: generateUniqueId("lv"), residentId, period: meta, reason: detail });
       } else {
-        repairRequests.unshift({ id: Date.now(), residentId, item: meta, detail, done: false });
+        repairRequests.unshift({ id: generateUniqueId("rp"), residentId, item: meta, detail, done: false });
       }
 
       persistAllState(true);
@@ -2509,13 +3082,13 @@
     };
 
     window.deleteLeaveRequest = function(id) {
-      leaveRequests = leaveRequests.filter(item => item.id !== id);
+      leaveRequests = leaveRequests.filter(item => String(item.id) !== String(id));
       persistAllState(true);
       renderTable();
     };
 
     window.toggleRepairDone = function(id) {
-      const target = repairRequests.find(item => item.id === id);
+      const target = repairRequests.find(item => String(item.id) === String(id));
       if (target) {
         target.done = !target.done;
         persistAllState(true);
@@ -2524,7 +3097,7 @@
     };
 
     window.deleteRepairRequest = function(id) {
-      repairRequests = repairRequests.filter(item => item.id !== id);
+      repairRequests = repairRequests.filter(item => String(item.id) !== String(id));
       persistAllState(true);
       renderTable();
     };
@@ -2617,7 +3190,7 @@
         let importedCount = 0;
         const newItems = [];
 
-        dataRows.forEach((cols, idx) => {
+        dataRows.forEach((cols) => {
           const building = normalizeBuilding(cols[0]);
           const floor = normalizeFloor(cols[1]);
           const room = (cols[2] || "").trim();
@@ -2628,7 +3201,7 @@
 
           if (name || studentId || room) {
             newItems.push({
-              id: Date.now() + idx + Math.floor(Math.random() * 1000),
+              id: generateUniqueId("res"),
               building,
               floor,
               room,
@@ -2651,6 +3224,7 @@
         }
 
         residents = [...newItems, ...residents];
+        ensureUniqueResidentIds();
         persistAllState(true);
         renderTable();
         alert(t("importSuccess").replace("{count}", importedCount));
@@ -2718,19 +3292,20 @@
       }
 
       if (editId) {
-        const index = residents.findIndex(r => r.id == editId);
+        const index = residents.findIndex(r => String(r.id) === String(editId));
         if (index !== -1) residents[index] = { ...residents[index], ...data };
       } else {
-        residents.unshift({ id: Date.now(), ...data });
+        residents.unshift({ id: generateUniqueId("res"), ...data });
       }
 
+      ensureUniqueResidentIds();
       persistAllState(true);
       renderTable();
       window.closeModal();
     };
 
     window.editStudent = function(id) {
-      const item = residents.find(r => r.id === id);
+      const item = residents.find(r => String(r.id) === String(id));
       if (!item || !currentUser) return;
       const canEditInfo = currentUser.role === "ADMIN" ||
         (currentUser.role === "OFFICER" && item.building === currentUser.assignedBuilding && item.floor === currentUser.assignedFloor);
@@ -2753,7 +3328,7 @@
     window.deleteStudent = function(id) {
       if (!currentUser || currentUser.role !== "ADMIN") return;
       if (confirm(t("confirmDelete"))) {
-        residents = residents.filter(r => r.id !== id);
+        residents = residents.filter(r => String(r.id) !== String(id));
         persistAllState(true);
         renderTable();
       }
@@ -2792,27 +3367,38 @@
 
     onValue(dbRef, (snapshot) => {
       const val = snapshot.val();
-      isApplyingRemoteData = true;
       if (val) {
+        if (val.updatedAt && lastLocalMutationAt && val.updatedAt < lastLocalMutationAt && (Date.now() - lastLocalMutationAt < 2500)) {
+          return;
+        }
+        isApplyingRemoteData = true;
         if (Array.isArray(val.residents)) residents = val.residents;
+        const fixedDupIds = ensureUniqueResidentIds();
         if (Array.isArray(val.staffAccounts)) staffAccounts = val.staffAccounts;
         studentPasswords = val.studentPasswords && typeof val.studentPasswords === "object" ? val.studentPasswords : {};
         attendanceRecords = val.attendanceRecords && typeof val.attendanceRecords === "object" ? val.attendanceRecords : {};
+        submittedFloors = val.submittedFloors && typeof val.submittedFloors === "object" ? val.submittedFloors : {};
         entryExitLogs = Array.isArray(val.entryExitLogs) ? val.entryExitLogs : [];
         leaveRequests = Array.isArray(val.leaveRequests) ? val.leaveRequests : [];
         repairRequests = Array.isArray(val.repairRequests) ? val.repairRequests : [];
+        if (val.curfewSettings && val.curfewSettings.start && val.curfewSettings.end) {
+          curfewSettings = val.curfewSettings;
+        }
         persistAllState(false);
+        isApplyingRemoteData = false;
+        if (fixedDupIds) {
+          pushCloudState();
+        }
         setSyncStatus("ok", "Firebase Live");
       } else {
         setSyncStatus("ok", "Firebase Live");
         pushCloudState();
       }
-      isApplyingRemoteData = false;
       if (currentUser) {
         renderTable();
       }
     }, () => {
-      setSyncStatus("err", "Offline / Rules");
+      setSyncStatus("err", "Local Saved (Rules Err)");
     });
 
     lastTrackedSessionDate = getActiveAttendanceSessionDate();
