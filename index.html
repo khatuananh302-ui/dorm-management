@@ -127,7 +127,7 @@
     </header>
 
     <main class="max-w-6xl mx-auto px-4 py-6 space-y-6">
-      <!-- ================= KHỐI THAO TÁC NHANH (THEO ẢNH MẪU) ================= -->
+      <!-- ================= KHỐI THAO TÁC NHANH ================= -->
       <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <div class="bg-[#080d1a] text-white px-6 py-5">
           <h2 data-i18n="quickActionsTitle" class="text-xl font-bold tracking-tight">Thao tác nhanh</h2>
@@ -135,7 +135,6 @@
         </div>
 
         <div class="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <!-- 1. Điểm danh -->
           <button type="button" onclick="quickNav('attendanceSection')" class="group text-left bg-white hover:bg-slate-50/80 border border-slate-200 hover:border-indigo-300 rounded-2xl p-4 transition flex items-center justify-between shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
             <div class="flex items-center gap-3.5">
               <div class="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-base shrink-0">
@@ -149,7 +148,6 @@
             <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-indigo-600 transition"></i>
           </button>
 
-          <!-- 2. Sinh viên -->
           <button type="button" onclick="quickNav('attendanceSection', true)" class="group text-left bg-white hover:bg-slate-50/80 border border-slate-200 hover:border-indigo-300 rounded-2xl p-4 transition flex items-center justify-between shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
             <div class="flex items-center gap-3.5">
               <div class="w-11 h-11 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-base shrink-0">
@@ -163,7 +161,6 @@
             <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-indigo-600 transition"></i>
           </button>
 
-          <!-- 3. Phòng & Tầng -->
           <button type="button" onclick="quickNav('attendanceSection')" class="group text-left bg-white hover:bg-slate-50/80 border border-slate-200 hover:border-purple-300 rounded-2xl p-4 transition flex items-center justify-between shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
             <div class="flex items-center gap-3.5">
               <div class="w-11 h-11 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-base shrink-0">
@@ -177,7 +174,6 @@
             <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-purple-600 transition"></i>
           </button>
 
-          <!-- 4. Xin nghỉ qua đêm (Tra cứu theo Mã SV / Ngày) -->
           <button type="button" onclick="quickNav('leaveSection')" class="group text-left bg-white hover:bg-slate-50/80 border border-slate-200 hover:border-amber-300 rounded-2xl p-4 transition flex items-center justify-between shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
             <div class="flex items-center gap-3.5">
               <div class="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-base shrink-0">
@@ -191,7 +187,6 @@
             <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-amber-600 transition"></i>
           </button>
 
-          <!-- 5. Lịch sử ra vào / Về muộn -->
           <button type="button" onclick="quickNav('entryExitSection')" class="group text-left bg-white hover:bg-slate-50/80 border border-slate-200 hover:border-slate-400 rounded-2xl p-4 transition flex items-center justify-between shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
             <div class="flex items-center gap-3.5">
               <div class="w-11 h-11 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center text-base shrink-0">
@@ -199,13 +194,12 @@
               </div>
               <div>
                 <div data-i18n="qaHistory" class="font-semibold text-slate-900 text-sm">Lịch sử ra vào</div>
-                <div data-i18n="qaHistoryDesc" class="text-xs text-slate-400 mt-0.5">Về muộn, giới nghiêm & xác nhận về</div>
+                <div data-i18n="qaHistoryDesc" class="text-xs text-slate-400 mt-0.5">Xem theo từng ngày & xác nhận về</div>
               </div>
             </div>
             <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-slate-800 transition"></i>
           </button>
 
-          <!-- 6. Báo sửa chữa -->
           <button type="button" onclick="quickNav('repairSection')" class="group text-left bg-white hover:bg-slate-50/80 border border-slate-200 hover:border-orange-300 rounded-2xl p-4 transition flex items-center justify-between shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
             <div class="flex items-center gap-3.5">
               <div class="w-11 h-11 rounded-xl bg-orange-50 text-orange-500 flex items-center justify-center text-base shrink-0">
@@ -219,7 +213,6 @@
             <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-orange-600 transition"></i>
           </button>
 
-          <!-- 7. Quản lý & Cán bộ -->
           <button type="button" onclick="quickActionAdmins()" class="group text-left bg-white hover:bg-slate-50/80 border border-slate-200 hover:border-cyan-300 rounded-2xl p-4 transition flex items-center justify-between shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
             <div class="flex items-center gap-3.5">
               <div class="w-11 h-11 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center text-base shrink-0">
@@ -233,7 +226,6 @@
             <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-cyan-600 transition"></i>
           </button>
 
-          <!-- 8. Giáo viên -->
           <button type="button" onclick="quickActionTeachers()" class="group text-left bg-white hover:bg-slate-50/80 border border-slate-200 hover:border-sky-300 rounded-2xl p-4 transition flex items-center justify-between shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
             <div class="flex items-center gap-3.5">
               <div class="w-11 h-11 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center text-base shrink-0">
@@ -247,7 +239,6 @@
             <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-sky-600 transition"></i>
           </button>
 
-          <!-- 9. Thống kê -->
           <button type="button" onclick="quickNav('statsSection')" class="group text-left bg-white hover:bg-slate-50/80 border border-slate-200 hover:border-rose-300 rounded-2xl p-4 transition flex items-center justify-between shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
             <div class="flex items-center gap-3.5">
               <div class="w-11 h-11 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center text-base shrink-0">
@@ -261,7 +252,6 @@
             <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-rose-600 transition"></i>
           </button>
 
-          <!-- 10. Cài đặt -->
           <button type="button" onclick="quickActionSettings()" class="group text-left bg-white hover:bg-slate-50/80 border border-slate-200 hover:border-slate-400 rounded-2xl p-4 transition flex items-center justify-between shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
             <div class="flex items-center gap-3.5">
               <div class="w-11 h-11 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center text-base shrink-0">
@@ -320,7 +310,7 @@
                 <i class="fa-solid fa-calendar-check text-indigo-600"></i>
                 <span data-i18n="attDateLabel">Phiên điểm danh tối (20:00 làm mới):</span>
               </span>
-              <input type="date" id="attendanceDate" onchange="renderTable()" class="border border-slate-300 rounded-xl px-3 py-1.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              <input type="date" id="attendanceDate" onchange="onAttendanceDateChange()" class="border border-slate-300 rounded-xl px-3 py-1.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500" />
               <button type="button" onclick="setToday()" class="text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-xl transition" data-i18n="todayBtn">
                 Phiên hiện tại
               </button>
@@ -425,7 +415,7 @@
         </div>
       </section>
 
-      <!-- ================= MỤC RIÊNG: XIN NGHỈ QUA ĐÊM (TRA CỨU THEO MÃ SV / NGÀY THÁNG) ================= -->
+      <!-- ================= MỤC RIÊNG: XIN NGHỈ QUA ĐÊM ================= -->
       <section id="leaveSection" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <div class="px-5 py-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
           <div class="flex items-center gap-3">
@@ -444,7 +434,6 @@
           </button>
         </div>
 
-        <!-- Khung tra cứu theo Mã SV hoặc Ngày tháng (không hiển thị danh sách tràn lan khi chưa tra cứu) -->
         <div class="p-4 bg-slate-50/70 border-b border-slate-200">
           <form onsubmit="runLeaveLookup(event)" class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
             <div class="md:col-span-2">
@@ -496,7 +485,7 @@
         </div>
       </section>
 
-      <!-- ================= MỤC RIÊNG: LỊCH SỬ RA VÀO KTX, VỀ MUỘN & RA NGOÀI GIỜ GIỚI NGHIÊM ================= -->
+      <!-- ================= MỤC RIÊNG: LỊCH SỬ RA VÀO KTX THEO TỪNG NGÀY ================= -->
       <section id="entryExitSection" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <div class="px-5 py-4 border-b border-slate-200 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
           <div class="flex items-start gap-3">
@@ -504,8 +493,8 @@
               <i class="fa-solid fa-clock-rotate-left"></i>
             </span>
             <div>
-              <h2 data-i18n="lateSectionTitle" class="text-base font-bold text-slate-900">Lịch Sử Ra Vào KTX: Đăng Ký Về Muộn & Ra Ngoài Giờ Giới Nghiêm</h2>
-              <p data-i18n="lateSectionSubtitle" class="text-xs text-slate-500">Đăng ký về muộn (12:00 – 22:00) hoặc ra ngoài trong giờ giới nghiêm tự động chuyển điểm danh sang Về muộn. Khi SV trở về KTX, giáo viên trực nhập đúng Mã SV để chuyển sang Có mặt.</p>
+              <h2 data-i18n="lateSectionTitle" class="text-base font-bold text-slate-900">Lịch Sử Ra Vào KTX (Theo Từng Ngày): Về Muộn & Ra Ngoài Giờ Giới Nghiêm</h2>
+              <p data-i18n="lateSectionSubtitle" class="text-xs text-slate-500">Hiển thị lịch sử ra vào theo từng ngày. Đăng ký về muộn (12:00 – 22:00) hoặc ra ngoài trong giờ giới nghiêm tự động chuyển điểm danh sang Về muộn.</p>
             </div>
           </div>
 
@@ -528,6 +517,30 @@
               <span data-i18n="registerLateBtn">Đăng ký về muộn</span>
             </button>
           </div>
+        </div>
+
+        <!-- Thanh chọn ngày & gom nhóm theo ngày cho Lịch sử ra vào -->
+        <div class="px-5 py-3 bg-slate-50/80 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+              <i class="fa-regular fa-calendar text-orange-600"></i>
+              <span data-i18n="entryExitDateLabel">Ngày lịch sử ra vào:</span>
+            </span>
+            <button type="button" onclick="shiftEntryExitDate(-1)" class="w-7 h-7 rounded-lg bg-white hover:bg-slate-100 border border-slate-300 text-slate-600 flex items-center justify-center text-xs transition" title="Ngày trước">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <input type="date" id="entryExitDateInput" onchange="onEntryExitDateChange()" class="border border-slate-300 bg-white rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500" />
+            <button type="button" onclick="shiftEntryExitDate(1)" class="w-7 h-7 rounded-lg bg-white hover:bg-slate-100 border border-slate-300 text-slate-600 flex items-center justify-center text-xs transition" title="Ngày sau">
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
+            <button type="button" onclick="setEntryExitToday()" class="text-xs font-semibold bg-white hover:bg-orange-50 text-orange-700 border border-orange-200 px-3 py-1.5 rounded-xl transition" data-i18n="entryTodayBtn">
+              Hôm nay
+            </button>
+            <button id="btnEntryAllDates" type="button" onclick="toggleEntryExitAllDates()" class="text-xs font-semibold bg-white hover:bg-slate-100 text-slate-600 border border-slate-300 px-3 py-1.5 rounded-xl transition" data-i18n="entryAllDatesBtn">
+              Tất cả ngày (Gom theo ngày)
+            </button>
+          </div>
+          <span id="entryExitCountBadge" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-orange-100 text-orange-800">0 lượt</span>
         </div>
 
         <div id="dutyCheckInBar" class="hidden px-4 py-3 bg-emerald-50/70 border-b border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -561,7 +574,7 @@
           </table>
         </div>
         <div id="entryExitEmptyState" class="hidden py-8 text-center text-slate-400 text-xs" data-i18n="entryExitEmptyText">
-          Chưa có lịch sử đăng ký về muộn / ra ngoài nào trong phạm vi xem.
+          Chưa có lịch sử đăng ký về muộn / ra ngoài nào trong ngày đã chọn.
         </div>
       </section>
 
@@ -1012,7 +1025,7 @@
         qaLeave: "Xin nghỉ qua đêm",
         qaLeaveDesc: "Tra cứu theo Mã SV / Ngày nghỉ",
         qaHistory: "Lịch sử ra vào",
-        qaHistoryDesc: "Về muộn, giới nghiêm & xác nhận về",
+        qaHistoryDesc: "Xem theo từng ngày & xác nhận về",
         qaRepair: "Báo sửa chữa",
         qaRepairDesc: "Sự cố phòng ở & thiết bị",
         qaAdmins: "Quản lý & Cán bộ",
@@ -1091,8 +1104,12 @@
         colNote: "Ghi Chú Điểm Danh",
         colAction: "Thao Tác",
         emptyText: "Chưa có dữ liệu phù hợp.",
-        lateSectionTitle: "Lịch Sử Ra Vào KTX: Đăng Ký Về Muộn & Ra Ngoài Giờ Giới Nghiêm",
-        lateSectionSubtitle: "Đăng ký về muộn (12:00 – 22:00) hoặc ra ngoài trong giờ giới nghiêm tự động chuyển điểm danh sang Về muộn. Khi SV trở về KTX, giáo viên trực nhập đúng Mã SV để chuyển sang Có mặt.",
+        lateSectionTitle: "Lịch Sử Ra Vào KTX (Theo Từng Ngày): Về Muộn & Ra Ngoài Giờ Giới Nghiêm",
+        lateSectionSubtitle: "Hiển thị lịch sử ra vào theo từng ngày. Đăng ký về muộn (12:00 – 22:00) hoặc ra ngoài trong giờ giới nghiêm tự động chuyển điểm danh sang Về muộn.",
+        entryExitDateLabel: "Ngày lịch sử ra vào:",
+        entryTodayBtn: "Hôm nay",
+        entryAllDatesBtn: "Tất cả ngày (Gom theo ngày)",
+        entryCountLabel: "{count} lượt",
         curfewSettingsBtnLabel: "Giờ giới nghiêm: {start} - {end}",
         curfewWindowOpen: "Đang trong giờ giới nghiêm ({start} - {end})",
         curfewWindowClosed: "Ngoài giờ giới nghiêm ({start} - {end})",
@@ -1123,7 +1140,7 @@
         colLateTimeInfo: "Thời Gian Ra / Dự Kiến Về",
         colLateReason: "Lý Do",
         colReturnStatus: "Trạng Thái & Giờ Về Thực Tế",
-        entryExitEmptyText: "Chưa có lịch sử đăng ký về muộn / ra ngoài nào trong phạm vi xem.",
+        entryExitEmptyText: "Chưa có lịch sử đăng ký về muộn / ra ngoài nào trong ngày đã chọn.",
         statusPendingReturn: "Chưa về KTX (Đang khóa Về muộn)",
         statusReturnedAt: "Đã về lúc {time} (Đã chuyển Có mặt)",
         confirmReturnInlineBtn: "Xác nhận về",
@@ -1254,7 +1271,7 @@
         qaLeave: "請假申請",
         qaLeaveDesc: "依學號或日期查詢請假",
         qaHistory: "歷史紀錄",
-        qaHistoryDesc: "晚歸、門禁外出與返宿確認",
+        qaHistoryDesc: "依每日檢視晚歸與門禁外出",
         qaRepair: "報修管理",
         qaRepairDesc: "房間與設備故障報修",
         qaAdmins: "管理員",
@@ -1333,8 +1350,12 @@
         colNote: "點名備註",
         colAction: "操作",
         emptyText: "尚無符合的資料。",
-        lateSectionTitle: "宿舍進出紀錄：晚歸登記與門禁時段外出登記",
-        lateSectionSubtitle: "登記晚歸（12:00–22:00）或門禁時段外出後，點名狀態自動轉為「晚歸」。返宿時由值班老師輸入正確學號確認轉為出席。",
+        lateSectionTitle: "宿舍進出紀錄（依每日檢視）：晚歸與門禁時段外出",
+        lateSectionSubtitle: "依日期篩選每日進出紀錄。登記晚歸（12:00–22:00）或門禁時段外出後，點名狀態自動轉為「晚歸」。",
+        entryExitDateLabel: "進出紀錄日期：",
+        entryTodayBtn: "今天",
+        entryAllDatesBtn: "全部日期（依日分組）",
+        entryCountLabel: "共 {count} 筆",
         curfewSettingsBtnLabel: "門禁時段：{start} - {end}",
         curfewWindowOpen: "目前為門禁時段（{start} - {end}）",
         curfewWindowClosed: "非門禁時段（{start} - {end}）",
@@ -1365,7 +1386,7 @@
         colLateTimeInfo: "外出/登記時間 · 預計返宿",
         colLateReason: "事由說明",
         colReturnStatus: "返宿狀態與實際時間",
-        entryExitEmptyText: "目前檢視範圍內尚無晚歸登記或門禁外出紀錄。",
+        entryExitEmptyText: "所選日期尚無晚歸登記或門禁外出紀錄。",
         statusPendingReturn: "尚未返宿（點名已鎖定晚歸）",
         statusReturnedAt: "已於 {time} 返宿（已轉為出席）",
         confirmReturnInlineBtn: "確認返宿",
@@ -1495,6 +1516,7 @@
     let currentUser = JSON.parse(sessionStorage.getItem("dorm_session_user_v1")) || null;
     let adminOverrideAttendanceOpen = false;
     let editingId = null;
+    let entryExitShowAllDates = false;
 
     let hasSelectedBuildingStep = false;
     let hasSelectedFloorStep = false;
@@ -1560,7 +1582,6 @@
       localStorage.setItem("dorm_residents_v5", JSON.stringify(residents));
     }
 
-    // Điều hướng nhanh từ các thẻ Thao tác nhanh
     window.quickNav = function(sectionId, openAllForSearch = false) {
       if (openAllForSearch && currentUser && currentUser.role === "ADMIN") {
         const searchEl = document.getElementById("searchInput");
@@ -1783,7 +1804,6 @@
       return Boolean(getFloorLockInfo(scope.dateStr, scope.building, scope.floor));
     }
 
-    // Kiểm tra sinh viên có đang xin nghỉ qua đêm trong ngày dateStr hay không
     function getActiveOvernightLeave(resident, dateStr = getSelectedDate()) {
       if (!resident || !dateStr) return null;
       const rId = String(resident.id);
@@ -2414,6 +2434,10 @@
       }
 
       document.getElementById("attendanceDate").value = sessionDate;
+      entryExitShowAllDates = false;
+      const entryDateInput = document.getElementById("entryExitDateInput");
+      if (entryDateInput) entryDateInput.value = sessionDate;
+
       persistAllState(true);
       window.closeCurfewOutModal();
       renderTable();
@@ -2701,11 +2725,55 @@
       window.quickNav("attendanceSection");
     };
 
+    window.onAttendanceDateChange = function() {
+      const val = getSelectedDate();
+      entryExitShowAllDates = false;
+      const entryDateInput = document.getElementById("entryExitDateInput");
+      if (entryDateInput) entryDateInput.value = val;
+      renderTable();
+    };
+
     window.setToday = function() {
       const activeSession = getActiveAttendanceSessionDate();
       lastTrackedSessionDate = activeSession;
       document.getElementById("attendanceDate").value = activeSession;
+      entryExitShowAllDates = false;
+      const entryDateInput = document.getElementById("entryExitDateInput");
+      if (entryDateInput) entryDateInput.value = activeSession;
       renderTable();
+    };
+
+    // Các hàm điều khiển lọc theo từng ngày ở mục Lịch sử ra vào
+    window.onEntryExitDateChange = function() {
+      entryExitShowAllDates = false;
+      renderEntryExitSection(getScopedResidents());
+    };
+
+    window.shiftEntryExitDate = function(deltaDays) {
+      const inputEl = document.getElementById("entryExitDateInput");
+      const baseStr = (inputEl && inputEl.value) ? inputEl.value : getSelectedDate();
+      const parts = baseStr.split("-").map(Number);
+      const dt = new Date(parts[0], parts[1] - 1, parts[2]);
+      dt.setDate(dt.getDate() + deltaDays);
+      const y = dt.getFullYear();
+      const m = String(dt.getMonth() + 1).padStart(2, "0");
+      const d = String(dt.getDate()).padStart(2, "0");
+      if (inputEl) inputEl.value = `${y}-${m}-${d}`;
+      entryExitShowAllDates = false;
+      renderEntryExitSection(getScopedResidents());
+    };
+
+    window.setEntryExitToday = function() {
+      const activeSession = getActiveAttendanceSessionDate();
+      const inputEl = document.getElementById("entryExitDateInput");
+      if (inputEl) inputEl.value = activeSession;
+      entryExitShowAllDates = false;
+      renderEntryExitSection(getScopedResidents());
+    };
+
+    window.toggleEntryExitAllDates = function() {
+      entryExitShowAllDates = !entryExitShowAllDates;
+      renderEntryExitSection(getScopedResidents());
     };
 
     function getSelectedDate() {
@@ -2727,7 +2795,6 @@
       );
     }
 
-    // Trạng thái điểm danh: ưu tiên kiểm tra đơn xin nghỉ qua đêm trong ngày đang chọn
     function getAttendanceStatus(resident) {
       const dateStr = getSelectedDate();
       const rKey = String(resident.id);
@@ -2858,6 +2925,10 @@
       }
 
       document.getElementById("attendanceDate").value = sessionDate;
+      entryExitShowAllDates = false;
+      const entryDateInput = document.getElementById("entryExitDateInput");
+      if (entryDateInput) entryDateInput.value = sessionDate;
+
       persistAllState(true);
       window.closeLateRegisterModal();
       renderTable();
@@ -3094,7 +3165,30 @@
 
     function renderEntryExitSection(scopedResidents) {
       const scopedIds = new Set(scopedResidents.map(r => String(r.id)));
-      const visibleLogs = (entryExitLogs || []).filter(item => scopedIds.has(String(item.residentId)));
+      const dateInputEl = document.getElementById("entryExitDateInput");
+      if (dateInputEl && !dateInputEl.value) {
+        dateInputEl.value = getSelectedDate();
+      }
+      const filterDateStr = dateInputEl ? dateInputEl.value : getSelectedDate();
+
+      const allBtn = document.getElementById("btnEntryAllDates");
+      if (allBtn) {
+        allBtn.className = entryExitShowAllDates
+          ? "text-xs font-semibold bg-slate-900 text-white border border-slate-900 px-3 py-1.5 rounded-xl transition"
+          : "text-xs font-semibold bg-white hover:bg-slate-100 text-slate-600 border border-slate-300 px-3 py-1.5 rounded-xl transition";
+      }
+
+      const visibleLogs = (entryExitLogs || []).filter(item => {
+        if (!scopedIds.has(String(item.residentId))) return false;
+        if (entryExitShowAllDates) return true;
+        return item.sessionDate === filterDateStr;
+      });
+
+      const countBadge = document.getElementById("entryExitCountBadge");
+      if (countBadge) {
+        countBadge.textContent = t("entryCountLabel").replace("{count}", visibleLogs.length);
+      }
+
       const tbody = document.getElementById("entryExitTableBody");
       const emptyEl = document.getElementById("entryExitEmptyState");
       const canConfirm = canConfirmStudentReturn();
@@ -3107,7 +3201,18 @@
       }
 
       emptyEl.classList.add("hidden");
-      tbody.innerHTML = visibleLogs.map(log => {
+
+      const groupedByDate = new Map();
+      visibleLogs
+        .slice()
+        .sort((a, b) => (b.sessionDate || "").localeCompare(a.sessionDate || ""))
+        .forEach(log => {
+          const dKey = log.sessionDate || "-";
+          if (!groupedByDate.has(dKey)) groupedByDate.set(dKey, []);
+          groupedByDate.get(dKey).push(log);
+        });
+
+      const renderSingleLogRow = (log) => {
         const res = residents.find(r => String(r.id) === String(log.residentId));
         if (!res) return "";
         const safeResId = String(res.id).replace(/'/g, "\\'");
@@ -3117,7 +3222,7 @@
         if (log.entryType === "CURFEW_OUT") {
           typeBadgeHTML = `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-800 border border-rose-200 inline-flex items-center gap-1"><i class="fa-solid fa-door-open text-[11px]"></i>${t("typeCurfewOut")}</span>`;
         } else if (log.entryType === "DIRECT_CHECKIN") {
-          typeBadgeHTML = `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-sky-100 text-sky-800 inline-flex items-center gap-1"><i class="fa-solid fa-user-check text-[11px]"></i>${t("typeDirectCheckIn")}</span>`;
+          typeBadgeHTML = `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-sky-100 text-sky-800 border border-sky-200 inline-flex items-center gap-1"><i class="fa-solid fa-user-check text-[11px]"></i>${t("typeDirectCheckIn")}</span>`;
         } else {
           typeBadgeHTML = `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-800 border border-orange-200 inline-flex items-center gap-1"><i class="fa-solid fa-user-clock text-[11px]"></i>${t("typeLateReturn")}</span>`;
         }
@@ -3157,10 +3262,25 @@
             ${actionCell}
           </tr>
         `;
-      }).join("");
+      };
+
+      let finalHTML = "";
+      groupedByDate.forEach((logsInDay, dateKey) => {
+        if (entryExitShowAllDates) {
+          finalHTML += `
+            <tr class="bg-orange-50/80 border-y border-orange-200/70">
+              <td colspan="${canConfirm ? 7 : 6}" class="py-2 px-4 text-xs font-bold text-orange-900">
+                <i class="fa-regular fa-calendar-days mr-1.5"></i>${dateKey} — ${t("entryCountLabel").replace("{count}", logsInDay.length)}
+              </td>
+            </tr>
+          `;
+        }
+        finalHTML += logsInDay.map(renderSingleLogRow).join("");
+      });
+
+      tbody.innerHTML = finalHTML;
     }
 
-    // Tra cứu nghỉ phép qua đêm theo Mã SV hoặc Ngày tháng (không hiển thị danh sách khi chưa nhập/chọn)
     window.runLeaveLookup = function(e) {
       if (e) e.preventDefault();
       renderLeaveLookupResults();
@@ -3800,6 +3920,9 @@
 
     lastTrackedSessionDate = getActiveAttendanceSessionDate();
     document.getElementById("attendanceDate").value = lastTrackedSessionDate;
+    const initEntryDateInput = document.getElementById("entryExitDateInput");
+    if (initEntryDateInput) initEntryDateInput.value = lastTrackedSessionDate;
+
     applyLanguageUI();
     updateAuthUI();
 
@@ -3808,6 +3931,8 @@
       if (lastTrackedSessionDate && currentSession !== lastTrackedSessionDate) {
         lastTrackedSessionDate = currentSession;
         document.getElementById("attendanceDate").value = currentSession;
+        const entryDateInput = document.getElementById("entryExitDateInput");
+        if (entryDateInput && !entryExitShowAllDates) entryDateInput.value = currentSession;
         if (currentUser) renderTable();
         return;
       }
