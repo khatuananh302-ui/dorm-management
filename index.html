@@ -128,7 +128,7 @@
 
     <main class="max-w-6xl mx-auto px-4 py-6 space-y-6">
       <!-- ================= KHỐI THAO TÁC NHANH ================= -->
-      <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <section id="quickActionsHomeCard" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <div class="bg-[#080d1a] text-white px-6 py-5">
           <h2 data-i18n="quickActionsTitle" class="text-xl font-bold tracking-tight">Thao tác nhanh</h2>
           <p data-i18n="quickActionsSubtitle" class="text-xs sm:text-sm text-slate-300 mt-1">Chức năng hệ thống thường dùng</p>
@@ -273,6 +273,25 @@
         <span id="roleNoticeText"></span>
       </div>
 
+      <!-- Thanh điều hướng khi đang mở một mục riêng từ Thao tác nhanh -->
+      <div id="workspaceSubBar" class="hidden bg-white border border-indigo-200 rounded-2xl px-4 py-3 shadow-sm flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5">
+          <span class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm">
+            <i id="workspaceSubBarIcon" class="fa-solid fa-layer-group"></i>
+          </span>
+          <div>
+            <div id="workspaceSubBarTitle" class="text-sm font-bold text-slate-900"></div>
+            <div id="workspaceSubBarDesc" class="text-xs text-slate-500"></div>
+          </div>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <button type="button" onclick="returnToQuickHome()" class="bg-slate-900 hover:bg-indigo-700 text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 shadow-sm">
+            <i class="fa-solid fa-house"></i>
+            <span data-i18n="backToHomeBtn">Trở về trang chủ</span>
+          </button>
+        </div>
+      </div>
+
       <!-- Thống kê nhanh điểm danh -->
       <div id="statsSection" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
@@ -308,7 +327,7 @@
             <div class="flex flex-wrap items-center gap-2">
               <span class="text-xs font-bold uppercase tracking-wide text-slate-800 bg-slate-100 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5">
                 <i class="fa-solid fa-calendar-check text-indigo-600"></i>
-                <span data-i18n="attDateLabel">Phiên điểm danh tối (20:00 làm mới):</span>
+                <span data-i18n="attDateLabel">Phiên điểm danh tối (12:00 làm mới):</span>
               </span>
               <input type="date" id="attendanceDate" onchange="onAttendanceDateChange()" class="border border-slate-300 rounded-xl px-3 py-1.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500" />
               <button type="button" onclick="setToday()" class="text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-xl transition" data-i18n="todayBtn">
@@ -904,15 +923,15 @@
     </div>
   </div>
 
-  <!-- Modal Quản Lý Tài Khoản, Phân Tầng, Phân Loại Giáo Viên, Xóa TK & Xem Mật Khẩu (Admin) -->
+ <!-- Modal Quản Lý Tài Khoản, Phân Tầng, Phân Loại Giáo Viên, Xóa TK & Đổi/Xem Mật Khẩu (Admin) -->
   <div id="accountsModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl max-w-5xl w-full p-6 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b pb-3">
         <div>
           <h2 data-i18n="accountsModalTitle" class="text-lg font-bold text-slate-800">Quản Lý Tài Khoản, Phân Tầng & Mật Khẩu</h2>
-          <p data-i18n="accountsModalDesc" class="text-xs text-slate-500">Phân tầng cán bộ (1F - 9F+), phân GV quản lý KTX / GV chủ nhiệm, xóa tài khoản và xem mật khẩu hiện tại</p>
+          <p data-i18n="accountsModalDesc" class="text-xs text-slate-500">Phân tầng cán bộ (1F - 9F+), phân GV quản lý KTX / GV chủ nhiệm, xóa tài khoản và xem/đặt lại mật khẩu</p>
         </div>
-        <button onclick="closeAccountsModal()" class="text-slate-400 hover:text-slate-600">
+        <button type="button" onclick="closeAccountsModal()" class="text-slate-400 hover:text-slate-600">
           <i class="fa-solid fa-xmark text-lg"></i>
         </button>
       </div>
@@ -990,6 +1009,16 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
     import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 
+    function escapeHTML(value) {
+      if (value === null || value === undefined) return "";
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
     const firebaseConfig = {
       apiKey: "AIzaSyCIOQ6WN78Y-9smbh-YagNjGSZOFfrp-K4",
       authDomain: "dorm-management-6c4bf.firebaseapp.com",
@@ -1014,6 +1043,10 @@
         passwordLabel: "Mật khẩu",
         loginBtn: "Đăng Nhập",
         loginInvalid: "Sai tên đăng nhập hoặc mật khẩu!",
+        backToHomeBtn: "Trở về trang chủ",
+        homeWorkspaceHint: "Trang chủ hiển thị khối Thao tác nhanh gọn gàng. Bấm vào từng mục để mở riêng phần đó.",
+        homeOpenBadge: "Đang mở riêng",
+        qaHomeModuleTitle: "Thao tác nhanh",
         quickActionsTitle: "Thao tác nhanh",
         quickActionsSubtitle: "Chức năng hệ thống thường dùng",
         qaAttendance: "Điểm danh",
@@ -1042,8 +1075,8 @@
         roleLabel_HOMEROOM_TEACHER: "GV chủ nhiệm ({class})",
         roleLabel_TEACHER: "GV chủ nhiệm ({class})",
         roleLabel_STUDENT: "Sinh viên nội trú",
-        notice_ADMIN: "Quyền Admin: Điểm danh làm mới lúc 20:00 tối. Bạn có thể tự cài đặt giờ giới nghiêm và mở khóa lại tầng nếu cần.",
-        notice_OFFICER: "Quyền Cán bộ tầng ({building} · {floor}): Điểm danh trong khung 22:30–00:00 (20:00 làm mới). Khi bấm Gửi điểm danh tầng, hệ thống sẽ khóa ngay phần điểm danh của tầng này.",
+        notice_ADMIN: "Quyền Admin: Điểm danh làm mới lúc 12:00 trưa. Bạn có thể tự cài đặt giờ giới nghiêm và mở khóa lại tầng nếu cần.",
+        notice_OFFICER: "Quyền Cán bộ tầng ({building} · {floor}): Điểm danh trong khung 22:30–00:00 (12:00 làm mới). Khi bấm Gửi điểm danh tầng, hệ thống sẽ khóa ngay phần điểm danh của tầng này.",
         notice_DORM_TEACHER: "Quyền GV quản lý KTX ({buildingScope}): Theo dõi KTX và nhập chính xác Mã SV tại mục Lịch Sử Ra Vào khi sinh viên trở về KTX để chuyển sang Có mặt.",
         notice_HOMEROOM_TEACHER: "Quyền GV chủ nhiệm ({class}): Chỉ hiển thị sinh viên thuộc {class} (chế độ chỉ xem).",
         notice_TEACHER: "Quyền GV chủ nhiệm ({class}): Chỉ hiển thị sinh viên thuộc {class} (chế độ chỉ xem).",
@@ -1064,7 +1097,7 @@
         statAttAbsent: "Vắng mặt ngày chọn",
         statAttLate: "Về muộn (đã khóa)",
         statAttOnLeave: "Đang xin nghỉ ngoài",
-        attDateLabel: "Phiên điểm danh tối (20:00 làm mới):",
+        attDateLabel: "Phiên điểm danh tối (12:00 làm mới):",
         todayBtn: "Phiên hiện tại",
         attWindowOpen: "Đang mở điểm danh (22:30 - 00:00)",
         attWindowClosed: "Đã khóa điểm danh (Chỉ mở 22:30 - 00:00)",
@@ -1260,6 +1293,10 @@
         passwordLabel: "密碼",
         loginBtn: "登入系統",
         loginInvalid: "帳號或密碼錯誤，請重新輸入！",
+        backToHomeBtn: "返回首頁",
+        homeWorkspaceHint: "首頁維持精簡的「快速操作」面板，點擊任一功能即可單獨開啟該區塊。",
+        homeOpenBadge: "獨立檢視中",
+        qaHomeModuleTitle: "快速操作",
         quickActionsTitle: "快速操作",
         quickActionsSubtitle: "常用系統功能",
         qaAttendance: "點名",
@@ -1288,8 +1325,8 @@
         roleLabel_HOMEROOM_TEACHER: "導師 / 班級老師 ({class})",
         roleLabel_TEACHER: "導師 / 班級老師 ({class})",
         roleLabel_STUDENT: "住宿生",
-        notice_ADMIN: "管理員權限：每晚 20:00 重置點名。可自行設定門禁時段，亦可解鎖已送出之樓層。",
-        notice_OFFICER: "樓層幹部權限（{building} · {floor}）：每晚 20:00 重置名單，22:30–00:00 進行點名。按下「送出樓層點名」確認後，該樓層點名將立即鎖定。",
+        notice_ADMIN: "管理員權限：每日 12:00 重置點名。可自行設定門禁時段，亦可解鎖已送出之樓層。",
+        notice_OFFICER: "樓層幹部權限（{building} · {floor}）：每日 12:00 重置名單，22:30–00:00 進行點名。按下「送出樓層點名」確認後，該樓層點名將立即鎖定。",
         notice_DORM_TEACHER: "宿舍管理老師權限（{buildingScope}）：可檢視宿舍狀態，並於學生返宿時輸入正確學號確認，自動解鎖並轉為出席。",
         notice_HOMEROOM_TEACHER: "導師 / 班級老師權限（{class}）：僅顯示 {class} 住宿生資料（唯讀）。",
         notice_TEACHER: "導師 / 班級老師權限（{class}）：僅顯示 {class} 住宿生資料（唯讀）。",
@@ -1310,7 +1347,7 @@
         statAttAbsent: "當日缺席",
         statAttLate: "晚歸（已鎖定）",
         statAttOnLeave: "請假外宿中",
-        attDateLabel: "晚間點名場次（20:00 重置）：",
+        attDateLabel: "晚間點名場次（12:00 重置）：",
         todayBtn: "目前場次",
         attWindowOpen: "點名開放中（22:30 - 00:00）",
         attWindowClosed: "已逾時鎖定（僅 22:30 - 00:00 開放）",
@@ -1582,15 +1619,111 @@
       localStorage.setItem("dorm_residents_v5", JSON.stringify(residents));
     }
 
+    let activeQuickModule = null;
+
+    const moduleMetaMap = {
+      attendanceSection: {
+        titleKey: "qaAttendance",
+        descKey: "qaAttendanceDesc",
+        icon: "fa-user-check"
+      },
+      leaveSection: {
+        titleKey: "qaLeave",
+        descKey: "qaLeaveDesc",
+        icon: "fa-file-lines"
+      },
+      entryExitSection: {
+        titleKey: "qaHistory",
+        descKey: "qaHistoryDesc",
+        icon: "fa-clock-rotate-left"
+      },
+      repairSection: {
+        titleKey: "qaRepair",
+        descKey: "qaRepairDesc",
+        icon: "fa-screwdriver-wrench"
+      },
+      officerManagementSection: {
+        titleKey: "qaAdmins",
+        descKey: "qaAdminsDesc",
+        icon: "fa-shield-halved"
+      },
+      statsSection: {
+        titleKey: "qaStats",
+        descKey: "qaStatsDesc",
+        icon: "fa-chart-simple"
+      }
+    };
+
+    function syncWorkspaceVisibility() {
+      const quickHomeCard = document.getElementById("quickActionsHomeCard");
+      const subBar = document.getElementById("workspaceSubBar");
+      const statsEl = document.getElementById("statsSection");
+      const attEl = document.getElementById("attendanceSection");
+      const leaveEl = document.getElementById("leaveSection");
+      const entryEl = document.getElementById("entryExitSection");
+      const officerEl = document.getElementById("officerManagementSection");
+      const repairEl = document.getElementById("repairSection");
+
+      const managedSections = [statsEl, attEl, leaveEl, entryEl, officerEl, repairEl];
+
+      if (!activeQuickModule) {
+        if (quickHomeCard) quickHomeCard.classList.remove("hidden");
+        if (subBar) subBar.classList.add("hidden");
+        managedSections.forEach(sec => {
+          if (sec) sec.classList.add("hidden");
+        });
+        return;
+      }
+
+      if (quickHomeCard) quickHomeCard.classList.add("hidden");
+      if (subBar) subBar.classList.remove("hidden");
+
+      const meta = moduleMetaMap[activeQuickModule] || {
+        titleKey: "qaHomeModuleTitle",
+        descKey: "quickActionsSubtitle",
+        icon: "fa-layer-group"
+      };
+      const titleEl = document.getElementById("workspaceSubBarTitle");
+      const descEl = document.getElementById("workspaceSubBarDesc");
+      const iconEl = document.getElementById("workspaceSubBarIcon");
+      if (titleEl) titleEl.textContent = t(meta.titleKey);
+      if (descEl) descEl.textContent = t(meta.descKey);
+      if (iconEl) iconEl.className = `fa-solid ${meta.icon}`;
+
+      managedSections.forEach(sec => {
+        if (!sec) return;
+        if (sec.id === activeQuickModule) {
+          sec.classList.remove("hidden");
+        } else {
+          sec.classList.add("hidden");
+        }
+      });
+
+      if (activeQuickModule === "officerManagementSection" && currentUser && currentUser.role !== "ADMIN") {
+        activeQuickModule = "attendanceSection";
+        syncWorkspaceVisibility();
+      }
+    }
+
+    window.returnToQuickHome = function() {
+      activeQuickModule = null;
+      syncWorkspaceVisibility();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
     window.quickNav = function(sectionId, openAllForSearch = false) {
+      activeQuickModule = sectionId;
+      syncWorkspaceVisibility();
+      if (typeof renderTable === "function" && currentUser) {
+        renderTable();
+      }
       if (openAllForSearch && currentUser && currentUser.role === "ADMIN") {
-        const searchEl = document.getElementById("searchInput");
-        if (searchEl) searchEl.focus();
+        setTimeout(() => {
+          const searchEl = document.getElementById("searchInput");
+          if (searchEl) searchEl.focus();
+        }, 50);
       }
-      const el = document.getElementById(sectionId);
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
+      window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
     window.quickActionAdmins = function() {
@@ -1695,7 +1828,7 @@
 
     function getActiveAttendanceSessionDate() {
       const now = new Date();
-      const shifted = new Date(now.getTime() - 20 * 60 * 60 * 1000);
+      const shifted = new Date(now.getTime() - 12 * 60 * 60 * 1000);
       const offset = shifted.getTimezoneOffset();
       const localDate = new Date(shifted.getTime() - offset * 60 * 1000);
       return localDate.toISOString().split("T")[0];
@@ -1918,6 +2051,7 @@
       if (!currentUser || currentUser.role !== "ADMIN") return;
       adminOverrideAttendanceOpen = !adminOverrideAttendanceOpen;
       renderTable();
+      syncWorkspaceVisibility();
     };
 
     function updateAttendanceWindowBadge() {
@@ -2224,6 +2358,7 @@
 
     window.logout = function() {
       currentUser = null;
+      activeQuickModule = null;
       adminOverrideAttendanceOpen = false;
       hasSelectedBuildingStep = false;
       hasSelectedFloorStep = false;
@@ -2599,59 +2734,90 @@
       }
     };
 
+    function jsAttr(val) {
+      return escapeHTML(String(val ?? "")).replace(/'/g, "\\'");
+    }
+
+    window.adminUpdateAccountPassword = function(username, newPass) {
+      if (!currentUser || currentUser.role !== "ADMIN") return;
+      const trimmedPass = (newPass || "").trim();
+      if (!trimmedPass) {
+        renderAccountsTable();
+        return;
+      }
+
+      const staffIdx = staffAccounts.findIndex(
+        a => a.username.trim().toLowerCase() === String(username).trim().toLowerCase()
+      );
+      if (staffIdx !== -1) {
+        staffAccounts[staffIdx].password = trimmedPass;
+      } else {
+        studentPasswords[username] = trimmedPass;
+      }
+
+      if (currentUser.username.trim().toLowerCase() === String(username).trim().toLowerCase()) {
+        currentUser.password = trimmedPass;
+        sessionStorage.setItem("dorm_session_user_v1", JSON.stringify(currentUser));
+      }
+
+      persistAllState(true);
+      renderAccountsTable();
+    };
+
     function renderAccountsTable() {
       const tbody = document.getElementById("accountsTableBody");
       const all = getAllAccountsList();
       const allFloors = getAllFloorsList();
 
       tbody.innerHTML = all.map(acc => {
+        const safeUserJs = jsAttr(acc.username);
         let scopeHTML = `<span class="text-slate-400">-</span>`;
 
         if (acc.role === "OFFICER") {
           const bOptions = buildingsList.map(b =>
-            `<option value="${b}" ${acc.assignedBuilding === b ? "selected" : ""}>${b}</option>`
+            `<option value="${escapeHTML(b)}" ${acc.assignedBuilding === b ? "selected" : ""}>${escapeHTML(b)}</option>`
           ).join("");
           const fOptions = allFloors.map(f =>
-            `<option value="${f}" ${acc.assignedFloor === f ? "selected" : ""}>${f}</option>`
+            `<option value="${escapeHTML(f)}" ${acc.assignedFloor === f ? "selected" : ""}>${escapeHTML(f)}</option>`
           ).join("");
 
           scopeHTML = `
             <div class="inline-flex items-center gap-1.5">
-              <select onchange="updateOfficerAssignment('${acc.username}', 'assignedBuilding', this.value)" class="border border-slate-300 rounded px-1.5 py-1 text-xs bg-white">${bOptions}</select>
-              <select onchange="updateOfficerAssignment('${acc.username}', 'assignedFloor', this.value)" class="border border-slate-300 rounded px-1.5 py-1 text-xs bg-white">${fOptions}</select>
+              <select onchange="updateOfficerAssignment('${safeUserJs}', 'assignedBuilding', this.value)" class="border border-slate-300 rounded px-1.5 py-1 text-xs bg-white">${bOptions}</select>
+              <select onchange="updateOfficerAssignment('${safeUserJs}', 'assignedFloor', this.value)" class="border border-slate-300 rounded px-1.5 py-1 text-xs bg-white">${fOptions}</select>
             </div>
           `;
         } else if (isDormTeacherRole(acc.role)) {
           const currentB = acc.assignedBuilding || "ALL";
           const dormBOptions = [
-            `<option value="ALL" ${currentB === "ALL" ? "selected" : ""}>${t("allDormBuildingsScope")}</option>`,
-            ...buildingsList.map(b => `<option value="${b}" ${currentB === b ? "selected" : ""}>${b}</option>`)
+            `<option value="ALL" ${currentB === "ALL" ? "selected" : ""}>${escapeHTML(t("allDormBuildingsScope"))}</option>`,
+            ...buildingsList.map(b => `<option value="${escapeHTML(b)}" ${currentB === b ? "selected" : ""}>${escapeHTML(b)}</option>`)
           ].join("");
           scopeHTML = `
-            <select onchange="updateDormTeacherBuilding('${acc.username}', this.value)" class="border border-slate-300 rounded px-2 py-1 text-xs bg-white">${dormBOptions}</select>
+            <select onchange="updateDormTeacherBuilding('${safeUserJs}', this.value)" class="border border-slate-300 rounded px-2 py-1 text-xs bg-white">${dormBOptions}</select>
           `;
         } else if (isHomeroomTeacherRole(acc.role)) {
           scopeHTML = `
-            <input type="text" value="${acc.assignedClass || ""}" onchange="updateTeacherClass('${acc.username}', this.value)" class="border border-slate-300 rounded px-2 py-1 text-xs w-28" />
+            <input type="text" value="${escapeHTML(acc.assignedClass || "")}" onchange="updateTeacherClass('${safeUserJs}', this.value)" class="border border-slate-300 rounded px-2 py-1 text-xs w-28" />
           `;
         } else if (acc.role === "STUDENT") {
-          scopeHTML = `${acc.assignedBuilding || ""} · ${acc.assignedFloor || ""} · ${acc.assignedClass || ""}`;
+          scopeHTML = `${escapeHTML(acc.assignedBuilding || "")} · ${escapeHTML(acc.assignedFloor || "")} · ${escapeHTML(acc.assignedClass || "")}`;
         }
 
-        const roleShortText = t("roleShort_" + acc.role);
+        const roleShortText = escapeHTML(t("roleShort_" + acc.role));
         const canDel = acc.username.toLowerCase() !== "admin";
         const delBtn = canDel
-          ? `<button onclick="deleteAccount('${acc.username}')" class="text-rose-500 hover:text-rose-700 p-1 rounded hover:bg-rose-50" title="${t("deleteTitle")}"><i class="fa-solid fa-trash"></i></button>`
+          ? `<button type="button" onclick="deleteAccount('${safeUserJs}')" class="text-rose-500 hover:text-rose-700 p-1 rounded hover:bg-rose-50" title="${escapeHTML(t("deleteTitle"))}"><i class="fa-solid fa-trash"></i></button>`
           : `<span class="text-slate-300">-</span>`;
 
         return `
           <tr class="hover:bg-slate-50">
-            <td class="py-2.5 px-3 font-mono font-semibold text-indigo-700">${acc.username}</td>
-            <td class="py-2.5 px-3 font-medium text-slate-800">${acc.displayName}</td>
+            <td class="py-2.5 px-3 font-mono font-semibold text-indigo-700">${escapeHTML(acc.username)}</td>
+            <td class="py-2.5 px-3 font-medium text-slate-800">${escapeHTML(acc.displayName)}</td>
             <td class="py-2.5 px-3">${roleShortText}</td>
             <td class="py-2.5 px-3">${scopeHTML}</td>
             <td class="py-2.5 px-3">
-              <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-900 font-mono font-semibold">${acc.password}</span>
+              <input type="text" value="${escapeHTML(acc.password || "")}" onchange="adminUpdateAccountPassword('${safeUserJs}', this.value)" class="px-2 py-1 rounded bg-amber-100 text-amber-900 border border-amber-300 font-mono font-semibold text-xs w-36 focus:outline-none focus:ring-2 focus:ring-amber-400" />
             </td>
             <td class="py-2.5 px-3 text-right">${delBtn}</td>
           </tr>
@@ -2661,7 +2827,7 @@
 
     function renderOfficerManagementSection() {
       const section = document.getElementById("officerManagementSection");
-      if (!currentUser || currentUser.role !== "ADMIN") {
+      if (!currentUser || currentUser.role !== "ADMIN" || activeQuickModule !== "officerManagementSection") {
         section.classList.add("hidden");
         return;
       }
@@ -3257,7 +3423,7 @@
               <div class="font-semibold text-slate-700">${timeLabelPrefix}: ${log.registeredAt || "-"}</div>
               <div class="text-orange-700 font-medium">Dự kiến về: ${log.expectedTime || "-"} (${log.sessionDate})</div>
             </td>
-            <td class="py-3 px-4 text-slate-600">${log.reason || "-"}</td>
+            <td class="py-3 px-4 text-slate-600">${escapeHTML(log.reason || "-")}</td>
             <td class="py-3 px-4">${statusHTML}</td>
             ${actionCell}
           </tr>
@@ -3358,7 +3524,7 @@
               <div class="text-xs font-mono text-indigo-600">${res.studentId} · ${t("classPrefix")}: ${res.className}</div>
             </td>
             <td class="py-3 px-4 font-semibold text-amber-800">${periodText}</td>
-            <td class="py-3 px-4 text-slate-600">${req.reason}</td>
+            <td class="py-3 px-4 text-slate-600">${escapeHTML(req.reason)}</td>
             <td class="py-3 px-4 text-right">
               ${canAct ? `<button onclick="deleteLeaveRequest('${safeReqId}')" class="text-rose-500 hover:text-rose-700 p-1.5 rounded hover:bg-rose-50" title="${t("deleteTitle")}"><i class="fa-solid fa-trash"></i></button>` : "-"}
             </td>
@@ -3402,8 +3568,8 @@
                 <div class="text-xs text-slate-500">${res.studentId} · ${t("classPrefix")}: ${res.className}</div>
               </td>
               <td class="py-3 px-4">
-                <div class="font-semibold text-purple-900">${req.item}</div>
-                <div class="text-xs text-slate-500">${req.detail}</div>
+                <div class="font-semibold text-purple-900">${escapeHTML(req.item)}</div>
+                <div class="text-xs text-slate-500">${escapeHTML(req.detail)}</div>
               </td>
               <td class="py-3 px-4">${statusBadge}</td>
               <td class="py-3 px-4 text-right space-x-1.5">
@@ -3508,7 +3674,7 @@
                   <div class="text-xs text-slate-500">${item.studentId || "-"} · ${t("classPrefix")}: ${item.className || "-"}</div>
                 </td>
                 <td class="py-3.5 px-4">${getAttendanceCellHTML(item)}</td>
-                <td class="py-3.5 px-4 text-slate-600 max-w-xs truncate" title="${noteDisplay}">${noteDisplay}</td>
+                <td class="py-3.5 px-4 text-slate-600 max-w-xs truncate" title="${escapeHTML(noteDisplay)}">${escapeHTML(noteDisplay)}</td>
                 ${actionCell}
               </tr>
             `;
@@ -3519,6 +3685,7 @@
       renderEntryExitSection(scoped);
       renderOfficerManagementSection();
       renderDedicatedSections(scoped);
+      syncWorkspaceVisibility();
     }
 
     window.openDedicatedRequestModal = function(type) {
@@ -3938,6 +4105,9 @@
       }
       if (currentUser) updateAttendanceWindowBadge();
     }, 30000);
+
+    window.renderTable = renderTable;
+    window.renderLeaveLookupResults = renderLeaveLookupResults;
   </script>
 </body>
 </html>
